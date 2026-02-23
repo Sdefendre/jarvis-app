@@ -48,13 +48,13 @@ export function EditorPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* Tab bar */}
-      <div className="flex items-center h-9 overflow-x-auto pt-8" style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e8e8e8' }}>
+      <div className="flex items-center h-9 overflow-x-auto pt-10" style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e8e8e8' }}>
         {tabs.map((tab) => {
           const isActiveTab = tab.id === activeTabId;
           return (
             <div
               key={tab.id}
-              className="group flex items-center gap-1.5 px-3 h-full text-xs cursor-pointer transition-colors titlebar-no-drag"
+              className="group flex items-center gap-1.5 px-3 h-full text-sm cursor-pointer transition-colors titlebar-no-drag"
               style={{
                 color: isActiveTab ? '#37352f' : '#787774',
                 borderBottom: isActiveTab ? '2px solid #2383e2' : '2px solid transparent',
@@ -106,7 +106,7 @@ export function EditorPanel() {
       </div>
 
       {/* Breadcrumb */}
-      <div className="px-4 py-1.5 text-xs" style={{ color: '#b0afa9', borderBottom: '1px solid #e8e8e8', backgroundColor: '#ffffff' }}>
+      <div className="px-5 py-2 text-sm" style={{ color: '#b0afa9', borderBottom: '1px solid #e8e8e8', backgroundColor: '#ffffff' }}>
         {activeTab.path.replace(/\//g, ' / ')}
       </div>
 

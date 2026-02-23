@@ -56,10 +56,10 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
   return (
     <>
       <div
-        className="flex items-center gap-1.5 px-2 py-1 cursor-pointer transition-colors titlebar-no-drag"
+        className="flex items-center gap-1.5 px-2 py-1.5 cursor-pointer transition-colors titlebar-no-drag"
         style={{
-          paddingLeft: `${depth * 16 + 8}px`,
-          fontSize: '13px',
+          paddingLeft: `${depth * 18 + 12}px`,
+          fontSize: '14px',
           fontWeight: 400,
           borderRadius: '4px',
           margin: '0 4px',
@@ -79,7 +79,7 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
         {node.isFile ? (
           <span
             className="rounded-full flex-shrink-0"
-            style={{ width: '6px', height: '6px', backgroundColor: dotColor }}
+            style={{ width: '7px', height: '7px', backgroundColor: dotColor }}
           />
         ) : (
           <span className="flex-shrink-0 w-3 text-center" style={{ color: '#787774', fontSize: '11px' }}>

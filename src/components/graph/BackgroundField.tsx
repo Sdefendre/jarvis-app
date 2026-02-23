@@ -8,9 +8,9 @@ import * as THREE from 'three';
 const PARTICLE_COUNT = 150;
 const SPREAD = 300;
 const PARTICLE_SIZE = 0.15;
-const OPACITY = 0.06;
+const OPACITY = 0.08;
 const DRIFT_SPEED = 0.003;
-const COLOR = '#9090a8';
+const COLOR = '#b0b0c0';
 
 export function BackgroundField() {
   const pointsRef = useRef<THREE.Points>(null);

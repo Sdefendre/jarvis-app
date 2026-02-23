@@ -93,9 +93,9 @@ export function FileTree() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-3 py-2" style={{ borderBottom: '1px solid #e8e8e8' }}>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-semibold truncate" style={{ color: '#37352f' }}>
+      <div className="px-4 py-2" style={{ paddingTop: '40px', borderBottom: '1px solid #e8e8e8' }}>
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-base font-semibold truncate" style={{ color: '#37352f' }}>
             {vaultName}
           </span>
           <div className="flex items-center gap-1 shrink-0">
@@ -140,7 +140,7 @@ export function FileTree() {
           placeholder="Search files..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-2 py-1.5 text-xs rounded
+          className="w-full px-3 py-2 text-sm rounded
                      placeholder:text-gray-400
                      focus:outline-none focus:ring-2"
           style={{
@@ -205,7 +205,7 @@ export function FileTree() {
       </div>
 
       {/* File count */}
-      <div className="px-3 py-1.5 text-xs" style={{ borderTop: '1px solid #e8e8e8', color: '#b0afa9' }}>
+      <div className="px-4 py-2 text-sm" style={{ borderTop: '1px solid #e8e8e8', color: '#b0afa9' }}>
         {files.length} notes
       </div>
     </div>
