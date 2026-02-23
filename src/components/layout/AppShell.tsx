@@ -265,6 +265,7 @@ export function AppShell() {
           overflow: graphCollapsed ? 'hidden' : 'visible',
           maxWidth: graphCollapsed ? 0 : undefined,
           opacity: graphCollapsed ? 0 : 1,
+          pointerEvents: graphCollapsed ? 'none' : 'auto',
         }}
       >
         <KnowledgeGraph />

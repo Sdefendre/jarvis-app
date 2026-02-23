@@ -132,7 +132,7 @@ export function EditorPanel() {
     <div className="flex flex-col h-full" style={{ backgroundColor: editorBg, color: editorText, transition: 'background-color 0.3s, color 0.3s' }}>
       {/* Tab bar */}
       <div
-        className="flex items-center h-9 overflow-x-auto pt-8"
+        className="flex items-center overflow-x-auto pt-8 min-h-[68px]"
         style={{ borderBottom: `1px solid ${editorBorder}` }}
       >
         {tabs.map((tab) => {
