@@ -1,9 +1,10 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron';
 import path from 'path';
 import { registerIpcHandlers } from './ipc/handlers';
+import { setVaultRoot } from './ipc/file-system';
 import { startVaultWatcher, stopVaultWatcher } from './ipc/vault-watcher';
 
-const VAULT_PATH = path.join(
+let vaultPath = path.join(
   app.getPath('home'),
   'Desktop',
   'Jarvis-Obsidian-Vault'
@@ -44,9 +45,36 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  registerIpcHandlers(VAULT_PATH);
+  registerIpcHandlers(vaultPath);
   createWindow();
-  startVaultWatcher(VAULT_PATH, () => mainWindow);
+  startVaultWatcher(vaultPath, () => mainWindow);
+
+  // IPC handler: open a native folder picker and switch the vault root
+  ipcMain.handle('vault:openFolder', async () => {
+    const win = mainWindow;
+    if (!win) return null;
+
+    const result = await dialog.showOpenDialog(win, {
+      title: 'Open Folder',
+      properties: ['openDirectory'],
+    });
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return null;
+    }
+
+    const selectedPath = result.filePaths[0];
+
+    // Update vault root in file-system module
+    vaultPath = selectedPath;
+    setVaultRoot(selectedPath);
+
+    // Restart the watcher on the new folder
+    stopVaultWatcher();
+    startVaultWatcher(selectedPath, () => mainWindow);
+
+    return selectedPath;
+  });
 });
 
 app.on('window-all-closed', () => {

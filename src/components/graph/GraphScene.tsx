@@ -1,24 +1,27 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useVaultStore } from '@/stores/vault-store';
 import { useEditorStore } from '@/stores/editor-store';
 import { useGraphStore } from '@/stores/graph-store';
 import { useForceGraph } from './useForceGraph';
 import { NeuralNode } from './NeuralNode';
 import { Synapse } from './Synapse';
-import { BackgroundField } from './BackgroundField';
 import type { GraphNode } from '@/types';
 import { useRef, useState } from 'react';
+import * as THREE from 'three';
 
 export function GraphScene() {
   const { graphData } = useVaultStore();
   const { openFile } = useEditorStore();
-  const { hoveredNode } = useGraphStore();
+  const { hoveredNode, selectedNode, setSelectedNode } = useGraphStore();
   const { setActiveFile } = useVaultStore();
   const { getPositions, tickRef } = useForceGraph(graphData.nodes, graphData.edges);
   const [, setRenderTick] = useState(0);
+  const { camera } = useThree();
+  const cameraTargetRef = useRef<THREE.Vector3 | null>(null);
+  const cameraLerpFrames = useRef(0);
 
   // Build adjacency map for connected-node highlighting
   const adjacencyMap = useMemo(() => {
@@ -54,21 +57,39 @@ export function GraphScene() {
     (node: GraphNode) => {
       setActiveFile(node.path);
       openFile(node.path);
+      setSelectedNode(node.id);
     },
-    [openFile, setActiveFile]
+    [openFile, setActiveFile, setSelectedNode]
   );
 
-  // Trigger re-render when force simulation updates
+  // Trigger re-render when force simulation updates + smooth camera animation
   useFrame(() => {
     setRenderTick(tickRef.current);
+
+    // When a node is selected, smoothly animate the camera toward it
+    if (selectedNode) {
+      const pos = getPositions().get(selectedNode);
+      if (pos) {
+        const target = new THREE.Vector3(pos.x, pos.y, pos.z + 40);
+        if (!cameraTargetRef.current || !cameraTargetRef.current.equals(target)) {
+          cameraTargetRef.current = target;
+          cameraLerpFrames.current = 0;
+        }
+      }
+    }
+
+    if (cameraTargetRef.current && cameraLerpFrames.current < 60) {
+      cameraLerpFrames.current++;
+      const t = cameraLerpFrames.current / 60;
+      const eased = 1 - Math.pow(1 - t, 3); // cubic ease-out
+      camera.position.lerp(cameraTargetRef.current, eased * 0.05);
+    }
   });
 
   const positions = getPositions();
 
   return (
     <>
-      <BackgroundField />
-
       {/* Synapses first (behind nodes) */}
       {graphData.edges.map((edge, i) => {
         const sPos = positions.get(edge.source);

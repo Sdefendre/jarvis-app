@@ -57,24 +57,27 @@ export function ChatPanel() {
   return (
     <div className="flex flex-col h-full pt-8">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
-        <span className="text-xs font-semibold text-neon-purple glow-purple tracking-wider uppercase">
+      <div className="flex items-center justify-between px-3 py-2" style={{ borderBottom: '1px solid #e8e8e8' }}>
+        <span className="text-sm font-semibold" style={{ color: '#37352f' }}>
           AI Assistant
         </span>
         <button
           onClick={toggleChat}
-          className="text-text-dim hover:text-text-primary transition-colors text-sm"
+          className="transition-colors text-sm"
+          style={{ color: '#b0afa9' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#37352f')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#b0afa9')}
         >
-          x
+          &times;
         </button>
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
-          <div className="text-text-dim text-xs text-center mt-8">
-            <p className="mb-2">Jarvis AI Assistant</p>
-            <p className="text-text-dim/60">
+          <div className="text-xs text-center mt-8">
+            <p className="mb-2" style={{ color: '#787774' }}>Jarvis AI Assistant</p>
+            <p style={{ color: '#b0afa9' }}>
               Configure OPENAI_API_KEY in .env.local to enable
             </p>
           </div>
@@ -83,31 +86,32 @@ export function ChatPanel() {
         {messages.map((msg, i) => (
           <div
             key={i}
-            className={`text-xs leading-relaxed ${
+            className="text-xs leading-relaxed rounded p-2"
+            style={
               msg.role === 'user'
-                ? 'text-text-primary bg-surface/50 rounded p-2'
-                : 'text-text-secondary p-2 border-l-2 border-neon-purple/30'
-            }`}
+                ? { color: '#37352f', backgroundColor: '#ffffff', border: '1px solid #e8e8e8' }
+                : { color: '#37352f', borderLeft: '3px solid #2383e2', backgroundColor: '#f7f7f8' }
+            }
           >
             {msg.content}
           </div>
         ))}
 
         {loading && (
-          <div className="text-neon-purple text-xs animate-pulse-glow">
+          <div className="text-xs" style={{ color: '#b0afa9' }}>
             Thinking...
           </div>
         )}
 
         {error && (
-          <div className="text-neon-orange text-xs p-2 bg-neon-orange/5 rounded border border-neon-orange/20">
+          <div className="text-xs p-2 rounded" style={{ color: '#eb5757', backgroundColor: 'rgba(235,87,87,0.04)', border: '1px solid rgba(235,87,87,0.15)' }}>
             {error}
           </div>
         )}
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-border">
+      <div className="p-3" style={{ borderTop: '1px solid #e8e8e8' }}>
         <div className="flex gap-2">
           <input
             type="text"
@@ -115,15 +119,33 @@ export function ChatPanel() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
             placeholder="Ask Jarvis..."
-            className="flex-1 px-2 py-1.5 text-xs bg-void border border-border rounded
-                       text-text-primary placeholder:text-text-dim
-                       focus:outline-none focus:border-neon-purple/50"
+            className="flex-1 px-2 py-1.5 text-xs rounded
+                       placeholder:text-gray-400
+                       focus:outline-none"
+            style={{
+              backgroundColor: '#f7f7f8',
+              border: '1px solid #e8e8e8',
+              color: '#37352f',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(35,131,226,0.25)';
+              e.currentTarget.style.borderColor = '#2383e2';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.borderColor = '#e8e8e8';
+            }}
           />
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-3 py-1.5 text-xs bg-neon-purple/20 text-neon-purple rounded
-                       hover:bg-neon-purple/30 transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 text-xs rounded transition-colors disabled:opacity-50"
+            style={{
+              backgroundColor: '#2383e2',
+              color: '#ffffff',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1b6ec2')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2383e2')}
           >
             Send
           </button>

@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('vault:createFile', filePath, content),
   deleteFile: (filePath: string) => ipcRenderer.invoke('vault:deleteFile', filePath),
   getGraphData: () => ipcRenderer.invoke('vault:getGraphData'),
+  openFolder: () => ipcRenderer.invoke('vault:openFolder'),
 
   onFileChange: (callback: (event: string, filePath: string) => void) => {
     const handler = (_: Electron.IpcRendererEvent, event: string, filePath: string) =>

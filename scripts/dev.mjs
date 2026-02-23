@@ -15,7 +15,7 @@ concurrently(
     },
   ],
   {
-    killOthers: ['failure', 'success'],
+    killOthersOn: ['failure', 'success'],
     restartTries: 0,
   }
 );

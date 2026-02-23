@@ -129,10 +129,76 @@ export async function parseVault(vaultRoot: string, files: string[]): Promise<Gr
     for (let j = i + 1; j < topDirs.length; j++) {
       const groupA = topLevelGroups.get(topDirs[i])!;
       const groupB = topLevelGroups.get(topDirs[j])!;
-      // Connect first 2 nodes of each group as bridges
-      const bridgeCount = Math.min(2, groupA.length, groupB.length);
+      // Connect first 3 nodes of each group as bridges
+      const bridgeCount = Math.min(3, groupA.length, groupB.length);
       for (let k = 0; k < bridgeCount; k++) {
         addEdge(groupA[k], groupB[k], 'cross-folder', 0.15);
+      }
+    }
+  }
+
+  // --- Orphan-node elimination pass ---
+  // Ensure every node has at least one edge so the graph is fully connected.
+  const connectedIds = new Set<string>();
+  for (const edge of edges) {
+    connectedIds.add(edge.source);
+    connectedIds.add(edge.target);
+  }
+
+  const orphanNodes = nodes.filter((n) => !connectedIds.has(n.id));
+
+  if (orphanNodes.length > 0) {
+    // Pre-compute lookup helpers for orphan resolution
+    const idToFile = new Map<string, string>();
+    for (const file of files) {
+      idToFile.set(pathToId.get(file)!, file);
+    }
+
+    for (const orphan of orphanNodes) {
+      const orphanFile = idToFile.get(orphan.id);
+      if (!orphanFile) continue;
+
+      const orphanDir = path.dirname(orphanFile);
+      const orphanTopDir = orphanFile.split(path.sep)[0];
+      let connected = false;
+
+      // 1st preference: folder-sibling in the same directory
+      const sameDirSiblings = folderGroups.get(orphanDir);
+      if (sameDirSiblings) {
+        for (const siblingId of sameDirSiblings) {
+          if (siblingId !== orphan.id && connectedIds.has(siblingId)) {
+            addEdge(orphan.id, siblingId, 'folder-sibling', 0.3);
+            connectedIds.add(orphan.id);
+            connected = true;
+            break;
+          }
+        }
+      }
+
+      if (connected) continue;
+
+      // 2nd preference: any file in the same top-level directory
+      const sameTopDirNodes = topLevelGroups.get(orphanTopDir);
+      if (sameTopDirNodes) {
+        for (const nodeId of sameTopDirNodes) {
+          if (nodeId !== orphan.id && connectedIds.has(nodeId)) {
+            addEdge(orphan.id, nodeId, 'cross-folder', 0.2);
+            connectedIds.add(orphan.id);
+            connected = true;
+            break;
+          }
+        }
+      }
+
+      if (connected) continue;
+
+      // Last resort: connect to the first node in the graph
+      if (nodes.length > 0) {
+        const fallbackTarget = nodes[0].id !== orphan.id ? nodes[0].id : (nodes.length > 1 ? nodes[1].id : null);
+        if (fallbackTarget) {
+          addEdge(orphan.id, fallbackTarget, 'cross-folder', 0.1);
+          connectedIds.add(orphan.id);
+        }
       }
     }
   }

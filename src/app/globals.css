@@ -1,20 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-void: #0a0a0f;
-  --color-void-light: #12121a;
-  --color-void-lighter: #1a1a2e;
-  --color-neon-cyan: #00f0ff;
-  --color-neon-purple: #b84dff;
-  --color-neon-orange: #ff8c42;
-  --color-neon-green: #39ff14;
-  --color-neon-pink: #ff2d7c;
-  --color-surface: #16161e;
-  --color-surface-hover: #1e1e2a;
-  --color-border: #2a2a3a;
-  --color-text-primary: #e8e8f0;
-  --color-text-secondary: #8888a0;
-  --color-text-dim: #555570;
+  --color-void: #ffffff;
+  --color-void-light: #f7f7f8;
+  --color-void-lighter: #f0f0f2;
+  --color-neon-cyan: #2383e2;
+  --color-neon-purple: #9b59b6;
+  --color-neon-orange: #e67e22;
+  --color-neon-green: #27ae60;
+  --color-neon-pink: #e74c6e;
+  --color-surface: #f7f7f8;
+  --color-surface-hover: #efefef;
+  --color-border: #e3e3e8;
+  --color-text-primary: #37352f;
+  --color-text-secondary: #787774;
+  --color-text-dim: #b4b4b0;
 }
 
 * {
@@ -28,9 +29,10 @@ html, body {
   overflow: hidden;
   background: var(--color-void);
   color: var(--color-text-primary);
-  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Electron title bar drag region */
@@ -47,62 +49,36 @@ html, body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #ffffff;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: #d4d4d8;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-dim);
+  background: #b4b4b0;
 }
 
-/* Glow animations */
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
-@keyframes breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
+/* Subtle animations */
 @keyframes flow-particles {
   0% { stroke-dashoffset: 0; }
   100% { stroke-dashoffset: -20; }
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-.animate-breathe {
-  animation: breathe 4s ease-in-out infinite;
-}
-
-/* Neon glow utility */
-.glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5), 0 0 20px rgba(0, 240, 255, 0.3);
-}
-
-.glow-purple {
-  text-shadow: 0 0 10px rgba(184, 77, 255, 0.5), 0 0 20px rgba(184, 77, 255, 0.3);
-}
-
 /* CodeMirror overrides */
 .cm-editor {
   height: 100%;
-  background: transparent !important;
+  background: #ffffff !important;
 }
 
 .cm-editor .cm-scroller {
-  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
   font-size: 14px;
   line-height: 1.6;
 }
 
 .cm-editor .cm-gutters {
-  background: transparent !important;
+  background: #f7f7f8 !important;
   border-right: 1px solid var(--color-border) !important;
+  color: #b4b4b0 !important;
 }

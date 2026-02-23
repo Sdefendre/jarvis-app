@@ -56,27 +56,34 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
   return (
     <>
       <div
-        className={`
-          flex items-center gap-1.5 px-2 py-0.5 cursor-pointer text-xs
-          transition-colors titlebar-no-drag
-          ${isActive
-            ? 'bg-neon-cyan/10 text-neon-cyan'
-            : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
-          }
-        `}
-        style={{ paddingLeft: `${depth * 16 + 8}px` }}
+        className="flex items-center gap-1.5 px-2 py-1 cursor-pointer transition-colors titlebar-no-drag"
+        style={{
+          paddingLeft: `${depth * 16 + 8}px`,
+          fontSize: '13px',
+          fontWeight: 400,
+          borderRadius: '4px',
+          margin: '0 4px',
+          backgroundColor: isActive ? 'rgba(35,131,226,0.08)' : undefined,
+          color: isActive ? '#2383e2' : '#37352f',
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) e.currentTarget.style.backgroundColor = '#f0f0f2';
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+        }}
         onClick={handleClick}
         onContextMenu={handleContextMenu}
       >
         {/* Folder arrow or file dot */}
         {node.isFile ? (
           <span
-            className="w-2 h-2 rounded-full flex-shrink-0"
-            style={{ backgroundColor: dotColor }}
+            className="rounded-full flex-shrink-0"
+            style={{ width: '6px', height: '6px', backgroundColor: dotColor }}
           />
         ) : (
-          <span className="text-text-dim flex-shrink-0 w-3 text-center">
-            {expanded ? 'v' : '>'}
+          <span className="flex-shrink-0 w-3 text-center" style={{ color: '#787774', fontSize: '11px' }}>
+            {expanded ? '\u25BE' : '\u25B8'}
           </span>
         )}
 
@@ -109,13 +116,22 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
             onClick={() => setContextMenu(null)}
           />
           <div
-            className="fixed z-50 bg-surface border border-border rounded shadow-lg py-1 min-w-[140px]"
-            style={{ left: contextMenu.x, top: contextMenu.y }}
+            className="fixed z-50 rounded py-1 min-w-[140px]"
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y,
+              backgroundColor: '#ffffff',
+              border: '1px solid #e8e8e8',
+              boxShadow: '0 1px 6px rgba(0,0,0,0.09), 0 2px 12px rgba(0,0,0,0.05)',
+            }}
           >
             {node.isFile && (
               <>
                 <button
-                  className="w-full px-3 py-1 text-xs text-left text-text-secondary hover:text-text-primary hover:bg-surface-hover"
+                  className="w-full px-3 py-1.5 text-xs text-left"
+                  style={{ color: '#37352f' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f0f2')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   onClick={() => {
                     navigator.clipboard.writeText(node.path);
                     setContextMenu(null);
@@ -124,7 +140,10 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
                   Copy Path
                 </button>
                 <button
-                  className="w-full px-3 py-1 text-xs text-left text-neon-pink hover:bg-surface-hover"
+                  className="w-full px-3 py-1.5 text-xs text-left"
+                  style={{ color: '#eb5757' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f0f0f2')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   onClick={() => {
                     onDelete(node.path);
                     setContextMenu(null);

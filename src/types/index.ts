@@ -35,9 +35,9 @@ export interface EditorTab {
 export type NodeCategory = 'journal' | 'personal' | 'business' | 'workspace' | 'archive';
 
 export const CATEGORY_COLORS: Record<NodeCategory, string> = {
-  journal: '#00f0ff',
-  personal: '#b84dff',
-  business: '#ff8c42',
-  workspace: '#39ff14',
-  archive: '#666680',
+  journal: '#7c9bf5',
+  personal: '#c084fc',
+  business: '#f59e6b',
+  workspace: '#5ddb6e',
+  archive: '#888899',
 };

@@ -49,7 +49,7 @@ function buildTree(files: string[]): TreeNode[] {
 }
 
 export function FileTree() {
-  const { files, activeFile, setActiveFile, refreshFiles } = useVaultStore();
+  const { files, activeFile, setActiveFile, refreshFiles, openFolder, vaultName } = useVaultStore();
   const { openFile } = useEditorStore();
   const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
@@ -93,18 +93,45 @@ export function FileTree() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-border">
+      <div className="px-3 py-2" style={{ borderBottom: '1px solid #e8e8e8' }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-neon-cyan glow-cyan tracking-wider uppercase">
-            Jarvis Vault
+          <span className="text-sm font-semibold truncate" style={{ color: '#37352f' }}>
+            {vaultName}
           </span>
-          <button
-            onClick={() => setCreating(true)}
-            className="text-text-dim hover:text-neon-cyan transition-colors text-lg leading-none"
-            title="New Note"
-          >
-            +
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={openFolder}
+              className="transition-colors text-xs leading-none px-1"
+              style={{ color: '#787774' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#37352f')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#787774')}
+              title="Open Folder"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCreating(true)}
+              className="transition-colors text-lg leading-none"
+              style={{ color: '#787774' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#37352f')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#787774')}
+              title="New Note"
+            >
+              +
+            </button>
+          </div>
         </div>
 
         {/* Search */}
@@ -113,15 +140,28 @@ export function FileTree() {
           placeholder="Search files..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-2 py-1 text-xs bg-void border border-border rounded
-                     text-text-primary placeholder:text-text-dim
-                     focus:outline-none focus:border-neon-cyan/50"
+          className="w-full px-2 py-1.5 text-xs rounded
+                     placeholder:text-gray-400
+                     focus:outline-none focus:ring-2"
+          style={{
+            backgroundColor: '#f7f7f8',
+            border: '1px solid #e8e8e8',
+            color: '#37352f',
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 0 2px rgba(35,131,226,0.25)';
+            e.currentTarget.style.borderColor = '#2383e2';
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = 'none';
+            e.currentTarget.style.borderColor = '#e8e8e8';
+          }}
         />
       </div>
 
       {/* New file input */}
       {creating && (
-        <div className="px-3 py-2 border-b border-border">
+        <div className="px-3 py-2" style={{ borderBottom: '1px solid #e8e8e8' }}>
           <input
             type="text"
             placeholder="Note name..."
@@ -132,9 +172,20 @@ export function FileTree() {
               if (e.key === 'Escape') setCreating(false);
             }}
             autoFocus
-            className="w-full px-2 py-1 text-xs bg-void border border-neon-cyan/50 rounded
-                       text-text-primary placeholder:text-text-dim
-                       focus:outline-none focus:border-neon-cyan"
+            className="w-full px-2 py-1.5 text-xs rounded
+                       placeholder:text-gray-400
+                       focus:outline-none focus:ring-2"
+            style={{
+              backgroundColor: '#f7f7f8',
+              border: '1px solid #2383e2',
+              color: '#37352f',
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(35,131,226,0.25)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           />
         </div>
       )}
@@ -154,7 +205,7 @@ export function FileTree() {
       </div>
 
       {/* File count */}
-      <div className="px-3 py-1.5 border-t border-border text-xs text-text-dim">
+      <div className="px-3 py-1.5 text-xs" style={{ borderTop: '1px solid #e8e8e8', color: '#b0afa9' }}>
         {files.length} notes
       </div>
     </div>

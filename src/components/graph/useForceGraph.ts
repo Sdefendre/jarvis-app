@@ -46,9 +46,9 @@ export function useForceGraph(nodes: GraphNode[], edges: GraphEdge[]) {
 
       const simNodes: SimNode[] = nodes.map((n, i) => ({
         id: n.id,
-        x: (Math.random() - 0.5) * 100,
-        y: (Math.random() - 0.5) * 100,
-        z: (Math.random() - 0.5) * 100,
+        x: (Math.random() - 0.5) * 150,
+        y: (Math.random() - 0.5) * 150,
+        z: (Math.random() - 0.5) * 150,
         vx: 0,
         vy: 0,
         vz: 0,
@@ -64,23 +64,23 @@ export function useForceGraph(nodes: GraphNode[], edges: GraphEdge[]) {
         .forceSimulation(simNodes, 3)
         .force(
           'charge',
-          d3.forceManyBody().strength(-80).distanceMax(200)
+          d3.forceManyBody().strength(-150).distanceMax(300)
         )
         .force(
           'link',
           d3
             .forceLink(simLinks)
             .id((d: SimNode) => d.id)
-            .distance(40)
+            .distance(60)
             .strength((l: SimLink) => l.strength * 0.5)
         )
         .force('center', d3.forceCenter())
         .force(
           'collision',
-          d3.forceCollide().radius(8)
+          d3.forceCollide().radius(12)
         )
         .alphaDecay(0.02)
-        .velocityDecay(0.3);
+        .velocityDecay(0.2);
 
       sim.on('tick', () => {
         tickRef.current++;

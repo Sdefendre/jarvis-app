@@ -5,78 +5,79 @@ import { tags } from '@lezer/highlight';
 export const neuralTheme = EditorView.theme(
   {
     '&': {
-      backgroundColor: 'transparent',
-      color: '#e8e8f0',
+      backgroundColor: '#ffffff',
+      color: '#37352f',
     },
     '.cm-content': {
-      caretColor: '#00f0ff',
-      fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', monospace",
+      caretColor: '#2383e2',
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
       padding: '16px 0',
     },
     '.cm-cursor, .cm-dropCursor': {
-      borderLeftColor: '#00f0ff',
+      borderLeftColor: '#2383e2',
       borderLeftWidth: '2px',
     },
     '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
-      backgroundColor: 'rgba(0, 240, 255, 0.15) !important',
+      backgroundColor: 'rgba(35, 131, 226, 0.12) !important',
     },
     '.cm-activeLine': {
-      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
     },
     '.cm-activeLineGutter': {
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      backgroundColor: 'rgba(0, 0, 0, 0.04)',
     },
     '.cm-gutters': {
-      backgroundColor: 'transparent',
-      color: '#555570',
+      backgroundColor: '#f7f7f8',
+      color: '#b4b4b0',
       border: 'none',
-      borderRight: '1px solid #2a2a3a',
+      borderRight: '1px solid #e3e3e8',
     },
     '.cm-lineNumbers .cm-gutterElement': {
       padding: '0 8px 0 16px',
     },
     '.cm-foldPlaceholder': {
-      backgroundColor: '#1a1a2e',
-      border: '1px solid #2a2a3a',
-      color: '#8888a0',
+      backgroundColor: '#f7f7f8',
+      border: '1px solid #e3e3e8',
+      color: '#787774',
     },
     '.cm-tooltip': {
-      backgroundColor: '#16161e',
-      border: '1px solid #2a2a3a',
-      color: '#e8e8f0',
+      backgroundColor: '#ffffff',
+      border: '1px solid #e3e3e8',
+      color: '#37352f',
+      boxShadow: '0 1px 4px rgba(0, 0, 0, 0.08)',
     },
     '.cm-tooltip-autocomplete': {
       '& > ul > li[aria-selected]': {
-        backgroundColor: 'rgba(0, 240, 255, 0.15)',
-        color: '#00f0ff',
+        backgroundColor: 'rgba(35, 131, 226, 0.08)',
+        color: '#2383e2',
       },
     },
     '.cm-searchMatch': {
-      backgroundColor: 'rgba(184, 77, 255, 0.3)',
+      backgroundColor: 'rgba(255, 212, 0, 0.4)',
     },
     '.cm-searchMatch.cm-searchMatch-selected': {
-      backgroundColor: 'rgba(0, 240, 255, 0.3)',
+      backgroundColor: 'rgba(255, 212, 0, 0.6)',
     },
   },
-  { dark: true }
+  { dark: false }
 );
 
 export const neuralHighlightStyle = syntaxHighlighting(
   HighlightStyle.define([
-    { tag: tags.heading1, color: '#00f0ff', fontWeight: 'bold', fontSize: '1.4em' },
-    { tag: tags.heading2, color: '#b84dff', fontWeight: 'bold', fontSize: '1.2em' },
-    { tag: tags.heading3, color: '#ff8c42', fontWeight: 'bold', fontSize: '1.1em' },
-    { tag: tags.heading4, color: '#39ff14', fontWeight: 'bold' },
-    { tag: tags.emphasis, color: '#ff8c42', fontStyle: 'italic' },
-    { tag: tags.strong, color: '#e8e8f0', fontWeight: 'bold' },
-    { tag: tags.strikethrough, color: '#555570', textDecoration: 'line-through' },
-    { tag: tags.link, color: '#00f0ff', textDecoration: 'underline' },
-    { tag: tags.url, color: '#00f0ff' },
-    { tag: tags.monospace, color: '#39ff14', fontFamily: "'SF Mono', monospace" },
-    { tag: tags.quote, color: '#8888a0', fontStyle: 'italic' },
-    { tag: tags.list, color: '#b84dff' },
-    { tag: tags.meta, color: '#555570' },
-    { tag: tags.comment, color: '#555570' },
-    { tag: tags.processingInstruction, color: '#555570' },
+    { tag: tags.heading1, color: '#37352f', fontWeight: 'bold', fontSize: '1.5em' },
+    { tag: tags.heading2, color: '#37352f', fontWeight: 'bold', fontSize: '1.3em' },
+    { tag: tags.heading3, color: '#37352f', fontWeight: 'bold', fontSize: '1.15em' },
+    { tag: tags.heading4, color: '#37352f', fontWeight: 'bold' },
+    { tag: tags.emphasis, color: '#37352f', fontStyle: 'italic' },
+    { tag: tags.strong, color: '#37352f', fontWeight: 'bold' },
+    { tag: tags.strikethrough, color: '#b4b4b0', textDecoration: 'line-through' },
+    { tag: tags.link, color: '#2383e2', textDecoration: 'underline' },
+    { tag: tags.url, color: '#2383e2' },
+    { tag: tags.monospace, color: '#eb5757', fontFamily: "'SF Mono', 'Fira Code', 'JetBrains Mono', monospace" },
+    { tag: tags.quote, color: '#787774', fontStyle: 'italic' },
+    { tag: tags.list, color: '#37352f' },
+    { tag: tags.meta, color: '#b4b4b0' },
+    { tag: tags.comment, color: '#b4b4b0' },
+    { tag: tags.processingInstruction, color: '#b4b4b0' },
   ])
 );

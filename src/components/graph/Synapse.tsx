@@ -20,10 +20,12 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
   const lineRef = useRef<THREE.Line>(null);
   const particlesRef = useRef<THREE.Points>(null);
 
-  const color = CATEGORY_COLORS[sourceCategory as NodeCategory] || '#666680';
-  const threeColor = useMemo(() => new THREE.Color(color), [color]);
+  // Use the source node's category color instead of a constant
+  const lineColor = CATEGORY_COLORS[sourceCategory as NodeCategory] || CATEGORY_COLORS.archive;
+  const edgeColor = useMemo(() => new THREE.Color(lineColor), [lineColor]);
 
-  const particleCount = edge.type === 'wiki-link' ? 8 : edge.type === 'folder-sibling' ? 3 : 1;
+  // Reduced particle counts — subtle, not dominant
+  const particleCount = edge.type === 'wiki-link' ? 4 : edge.type === 'folder-sibling' ? 2 : 1;
 
   // Particle positions along the curve
   const particlePositions = useMemo(() => {
@@ -38,7 +40,7 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
     // Update line geometry between current positions
     const positions = lineRef.current.geometry.attributes.position;
     if (positions) {
-      // Midpoint with offset for curve effect
+      // Midpoint with slight curve
       const midX = (sourcePos[0] + targetPos[0]) / 2;
       const midY = (sourcePos[1] + targetPos[1]) / 2 + 3;
       const midZ = (sourcePos[2] + targetPos[2]) / 2;
@@ -50,18 +52,18 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
       positions.needsUpdate = true;
     }
 
-    // Animate line opacity
+    // Low opacity lines — visible but not dominant
     const mat = lineRef.current.material as THREE.LineBasicMaterial;
-    const targetOpacity = highlighted ? 0.6 : edge.type === 'wiki-link' ? 0.3 : 0.1;
+    const targetOpacity = highlighted ? 0.35 : 0.08;
     mat.opacity += (targetOpacity - mat.opacity) * 0.1;
 
-    // Animate particles flowing along the curve
+    // Animate particles flowing along the curve — slow and subtle
     if (particlesRef.current) {
       const pPositions = particlesRef.current.geometry.attributes.position;
       if (pPositions) {
         const arr = pPositions.array as Float32Array;
         for (let i = 0; i < particleCount; i++) {
-          const phase = (t * 0.5 + i / particleCount) % 1;
+          const phase = (t * 0.3 + i / particleCount) % 1;
           // Quadratic bezier interpolation
           const midX = (sourcePos[0] + targetPos[0]) / 2;
           const midY = (sourcePos[1] + targetPos[1]) / 2 + 3;
@@ -76,13 +78,13 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
       }
 
       const pMat = particlesRef.current.material as THREE.PointsMaterial;
-      pMat.opacity = highlighted ? 0.8 : 0.3;
+      pMat.opacity = highlighted ? 0.4 : 0.15;
     }
   });
 
   return (
     <>
-      {/* Connection line */}
+      {/* Thin subtle connection line — source category color */}
       <line ref={lineRef as React.RefObject<THREE.Line>}>
         <bufferGeometry>
           <bufferAttribute
@@ -91,14 +93,14 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
           />
         </bufferGeometry>
         <lineBasicMaterial
-          color={threeColor}
+          color={edgeColor}
           transparent
-          opacity={0.15}
+          opacity={0.08}
           linewidth={1}
         />
       </line>
 
-      {/* Flowing particles */}
+      {/* Subtle flowing particles */}
       <points ref={particlesRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -107,10 +109,10 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
           />
         </bufferGeometry>
         <pointsMaterial
-          color={threeColor}
-          size={0.5}
+          color={edgeColor}
+          size={0.2}
           transparent
-          opacity={0.3}
+          opacity={0.15}
           sizeAttenuation
           depthWrite={false}
         />

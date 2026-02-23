@@ -7,11 +7,13 @@ interface VaultState {
   graphData: GraphData;
   activeFile: string | null;
   loading: boolean;
+  vaultName: string;
 
   loadVault: () => Promise<void>;
   setActiveFile: (path: string | null) => void;
   setGraphData: (data: GraphData) => void;
   refreshFiles: () => Promise<void>;
+  openFolder: () => Promise<void>;
 }
 
 export const useVaultStore = create<VaultState>((set, get) => ({
@@ -19,6 +21,7 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   graphData: { nodes: [], edges: [] },
   activeFile: null,
   loading: true,
+  vaultName: 'Jarvis Vault',
 
   loadVault: async () => {
     set({ loading: true });
@@ -41,5 +44,15 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   refreshFiles: async () => {
     const files = await electronAPI.listFiles();
     set({ files });
+  },
+
+  openFolder: async () => {
+    const selectedPath = await electronAPI.openFolder();
+    if (selectedPath) {
+      // Extract the folder name from the full path
+      const folderName = selectedPath.split('/').pop() || selectedPath;
+      set({ vaultName: folderName, activeFile: null });
+      await get().loadVault();
+    }
   },
 }));

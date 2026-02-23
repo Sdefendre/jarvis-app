@@ -36,10 +36,10 @@ export function EditorPanel() {
 
   if (!activeTab) {
     return (
-      <div className="flex items-center justify-center h-full text-text-dim">
+      <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="text-3xl mb-2 opacity-20">{ }</div>
-          <div className="text-sm">Select a node or file to begin editing</div>
+          <div className="text-3xl mb-2" style={{ color: '#e0dfde' }}>{ }</div>
+          <div className="text-sm" style={{ color: '#b0afa9' }}>Select a note or file to begin editing</div>
         </div>
       </div>
     );
@@ -48,44 +48,57 @@ export function EditorPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* Tab bar */}
-      <div className="flex items-center h-9 bg-surface/50 border-b border-border overflow-x-auto pt-8">
-        {tabs.map((tab) => (
-          <div
-            key={tab.id}
-            className={`
-              flex items-center gap-1.5 px-3 h-full text-xs cursor-pointer border-r border-border
-              transition-colors titlebar-no-drag
-              ${tab.id === activeTabId
-                ? 'bg-void text-neon-cyan'
-                : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
-              }
-            `}
-            onClick={() => {
-              useEditorStore.getState().openFile(tab.path);
-              useVaultStore.getState().setActiveFile(tab.path);
-            }}
-          >
-            {/* Dirty indicator */}
-            {tab.isDirty && (
-              <span className="w-1.5 h-1.5 rounded-full bg-neon-orange flex-shrink-0" />
-            )}
-            <span className="truncate max-w-[120px]">{tab.name}</span>
-            <button
-              className="ml-1 text-text-dim hover:text-text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={(e) => {
-                e.stopPropagation();
-                closeTab(tab.id);
+      <div className="flex items-center h-9 overflow-x-auto pt-8" style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #e8e8e8' }}>
+        {tabs.map((tab) => {
+          const isActiveTab = tab.id === activeTabId;
+          return (
+            <div
+              key={tab.id}
+              className="group flex items-center gap-1.5 px-3 h-full text-xs cursor-pointer transition-colors titlebar-no-drag"
+              style={{
+                color: isActiveTab ? '#37352f' : '#787774',
+                borderBottom: isActiveTab ? '2px solid #2383e2' : '2px solid transparent',
+                fontWeight: isActiveTab ? 500 : 400,
+              }}
+              onMouseEnter={(e) => {
+                if (!isActiveTab) e.currentTarget.style.backgroundColor = '#f7f7f8';
+              }}
+              onMouseLeave={(e) => {
+                if (!isActiveTab) e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              onClick={() => {
+                useEditorStore.getState().openFile(tab.path);
+                useVaultStore.getState().setActiveFile(tab.path);
               }}
             >
-              x
-            </button>
-          </div>
-        ))}
+              {/* Dirty indicator */}
+              {tab.isDirty && (
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#f2994a' }} />
+              )}
+              <span className="truncate max-w-[120px]">{tab.name}</span>
+              <button
+                className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ color: '#b0afa9', fontSize: '12px' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = '#37352f')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = '#b0afa9')}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  closeTab(tab.id);
+                }}
+              >
+                &times;
+              </button>
+            </div>
+          );
+        })}
 
         {/* Chat toggle */}
         <button
           onClick={toggleChat}
-          className="ml-auto px-3 h-full text-text-dim hover:text-neon-purple transition-colors titlebar-no-drag"
+          className="ml-auto px-3 h-full transition-colors titlebar-no-drag text-xs font-medium"
+          style={{ color: '#787774' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#2383e2')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#787774')}
           title="Toggle AI Chat"
         >
           AI
@@ -93,7 +106,7 @@ export function EditorPanel() {
       </div>
 
       {/* Breadcrumb */}
-      <div className="px-4 py-1.5 text-xs text-text-dim border-b border-border bg-void">
+      <div className="px-4 py-1.5 text-xs" style={{ color: '#b0afa9', borderBottom: '1px solid #e8e8e8', backgroundColor: '#ffffff' }}>
         {activeTab.path.replace(/\//g, ' / ')}
       </div>
 

@@ -11,7 +11,16 @@ import { ChatPanel } from '@/components/chat/ChatPanel';
 
 export function AppShell() {
   const { loadVault, setGraphData, refreshFiles, loading } = useVaultStore();
-  const { sidebarWidth, editorWidth, chatOpen, chatWidth } = useUIStore();
+  const {
+    sidebarWidth,
+    editorWidth,
+    chatOpen,
+    chatWidth,
+    graphFullscreen,
+    graphCollapsed,
+    toggleGraphFullscreen,
+    toggleGraphCollapsed,
+  } = useUIStore();
   const dividerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,6 +81,31 @@ export function AppShell() {
     );
   }
 
+  /* ---- Fullscreen overlay ---- */
+  if (graphFullscreen) {
+    return (
+      <div className="fixed inset-0 z-[100] bg-void">
+        {/* Title bar drag region */}
+        <div className="fixed top-0 left-0 right-0 h-8 titlebar-drag z-[110]" />
+
+        <KnowledgeGraph />
+
+        {/* Floating toolbar — exit fullscreen only */}
+        <div
+          className="fixed top-10 right-3 z-[120] flex gap-1 rounded-lg border border-gray-200 bg-white px-1.5 py-1 shadow-sm"
+        >
+          <button
+            onClick={toggleGraphFullscreen}
+            className="flex h-6 w-6 items-center justify-center rounded text-sm text-gray-400 hover:text-gray-800 transition-colors"
+            title="Exit fullscreen"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-void overflow-hidden">
       {/* Title bar drag region */}
@@ -86,21 +120,65 @@ export function AppShell() {
       </div>
 
       {/* Graph */}
-      <div className="flex-1 min-w-0 relative">
+      <div
+        className="relative min-w-0 transition-all duration-300 ease-in-out"
+        style={{
+          flex: graphCollapsed ? '0 0 0px' : '1 1 0%',
+          overflow: graphCollapsed ? 'hidden' : 'visible',
+          opacity: graphCollapsed ? 0 : 1,
+        }}
+      >
         <KnowledgeGraph />
+
+        {/* Floating toolbar — collapse & fullscreen */}
+        {!graphCollapsed && (
+          <div
+            className="absolute top-10 right-3 z-30 flex gap-1 rounded-lg border border-gray-200 bg-white px-1.5 py-1 shadow-sm"
+          >
+            <button
+              onClick={toggleGraphCollapsed}
+              className="flex h-6 w-6 items-center justify-center rounded text-sm text-gray-400 hover:text-gray-800 transition-colors"
+              title="Collapse graph"
+            >
+              −
+            </button>
+            <button
+              onClick={toggleGraphFullscreen}
+              className="flex h-6 w-6 items-center justify-center rounded text-sm text-gray-400 hover:text-gray-800 transition-colors"
+              title="Fullscreen"
+            >
+              ⛶
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* Restore button when collapsed */}
+      {graphCollapsed && (
+        <div className="flex-shrink-0 flex items-start pt-10">
+          <button
+            onClick={toggleGraphCollapsed}
+            className="mx-1 flex h-6 w-6 items-center justify-center rounded-lg border border-gray-200 bg-white text-sm text-gray-400 hover:text-gray-800 shadow-sm transition-colors"
+            title="Expand graph"
+          >
+            □
+          </button>
+        </div>
+      )}
+
       {/* Resizable Divider */}
-      <div
-        ref={dividerRef}
-        className="flex-shrink-0 w-1 bg-border hover:bg-neon-cyan/30 cursor-col-resize transition-colors"
-        onMouseDown={handleDividerDrag}
-      />
+      {!graphCollapsed && (
+        <div
+          ref={dividerRef}
+          className="flex-shrink-0 w-1 bg-border hover:bg-neon-cyan/30 cursor-col-resize transition-colors"
+          onMouseDown={handleDividerDrag}
+        />
+      )}
 
       {/* Editor */}
       <div
-        className="flex-shrink-0 border-l border-border bg-void overflow-hidden"
-        style={{ width: editorWidth }}
+        className="flex-shrink-0 border-l border-border bg-void overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ width: editorWidth, flex: graphCollapsed ? '1 1 0%' : undefined }}
       >
         <EditorPanel />
       </div>

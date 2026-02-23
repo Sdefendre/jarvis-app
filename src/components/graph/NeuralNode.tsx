@@ -18,47 +18,40 @@ interface NeuralNodeProps {
 
 export function NeuralNode({ node, position, isConnected, onSelect }: NeuralNodeProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   const { hoveredNode, setHoveredNode } = useGraphStore();
 
-  const color = CATEGORY_COLORS[node.category as NodeCategory] || CATEGORY_COLORS.archive;
-  const threeColor = useMemo(() => new THREE.Color(color), [color]);
+  const categoryColor = CATEGORY_COLORS[node.category as NodeCategory] || CATEGORY_COLORS.archive;
+  const catColor = useMemo(() => new THREE.Color(categoryColor), [categoryColor]);
 
   const isHighlighted = hoveredNode === node.id || isConnected;
-  const baseEmissive = isHighlighted ? 1.2 : 0.6;
-  const targetEmissive = hovered ? 1.5 : baseEmissive;
 
-  useFrame(({ clock }) => {
+  // Emissive targets: subtle base, brighter on highlight/hover
+  const baseEmissive = isHighlighted ? 0.4 : 0.2;
+  const targetEmissive = hovered ? 0.6 : baseEmissive;
+
+  // Scale targets: gentle hover bump
+  const targetScale = hovered ? 1.3 : 1;
+
+  useFrame(() => {
     if (!meshRef.current) return;
 
-    const t = clock.getElapsedTime();
+    // Smooth scale transition via lerp
+    const currentScale = meshRef.current.scale.x;
+    const newScale = currentScale + (targetScale - currentScale) * 0.12;
+    meshRef.current.scale.setScalar(newScale);
 
-    // Breathing animation — sine wave scale pulse
-    const breathe = 1 + Math.sin(t * 1.5 + node.id.length * 0.5) * 0.08;
-    const hoverScale = hovered ? 1.4 : 1;
-    const scale = breathe * hoverScale;
-    meshRef.current.scale.setScalar(scale);
-
-    // Smooth emissive intensity
+    // Smooth emissive intensity transition
     const mat = meshRef.current.material as THREE.MeshStandardMaterial;
     mat.emissiveIntensity += (targetEmissive - mat.emissiveIntensity) * 0.1;
 
     // Position update
     meshRef.current.position.set(...position);
-
-    // Glow shell
-    if (glowRef.current) {
-      glowRef.current.position.set(...position);
-      glowRef.current.scale.setScalar(scale * 1.8);
-      const glowMat = glowRef.current.material as THREE.MeshBasicMaterial;
-      glowMat.opacity = hovered ? 0.25 : isHighlighted ? 0.15 : 0.08;
-    }
   });
 
   return (
     <>
-      {/* Core sphere */}
+      {/* Clean sphere node */}
       <mesh
         ref={meshRef}
         position={position}
@@ -78,38 +71,33 @@ export function NeuralNode({ node, position, isConnected, onSelect }: NeuralNode
           onSelect(node);
         }}
       >
-        <sphereGeometry args={[1.2, 32, 32]} />
+        <sphereGeometry args={[0.8, 32, 32]} />
         <meshStandardMaterial
-          color={threeColor}
-          emissive={threeColor}
-          emissiveIntensity={0.6}
-          roughness={0.3}
-          metalness={0.7}
+          color={catColor}
+          emissive={catColor}
+          emissiveIntensity={0.2}
+          roughness={0.6}
+          metalness={0.1}
         />
       </mesh>
 
-      {/* Outer glow shell */}
-      <mesh ref={glowRef} position={position}>
-        <sphereGeometry args={[1.2, 16, 16]} />
-        <meshBasicMaterial
-          color={threeColor}
-          transparent
-          opacity={0.08}
-          depthWrite={false}
-        />
-      </mesh>
-
-      {/* Label on hover */}
+      {/* Label on hover — clean sans-serif pill */}
       {hovered && (
         <Html position={position} center style={{ pointerEvents: 'none' }}>
           <div
-            className="px-2 py-1 rounded text-xs whitespace-nowrap"
             style={{
-              background: 'rgba(10, 10, 15, 0.9)',
-              border: `1px solid ${color}`,
-              color: color,
+              background: 'rgba(30, 30, 30, 0.92)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              borderRadius: '6px',
+              padding: '3px 10px',
+              color: '#ffffffde',
+              fontFamily:
+                '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+              fontSize: '11px',
+              fontWeight: 500,
+              letterSpacing: '0.01em',
+              whiteSpace: 'nowrap',
               transform: 'translateY(-24px)',
-              textShadow: `0 0 8px ${color}`,
             }}
           >
             {node.label}

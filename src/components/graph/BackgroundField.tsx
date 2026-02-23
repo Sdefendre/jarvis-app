@@ -1,11 +1,16 @@
-// @ts-nocheck — R3F JSX intrinsics not typed with React 19
+// @ts-nocheck
 'use client';
 
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-const PARTICLE_COUNT = 200;
+const PARTICLE_COUNT = 150;
+const SPREAD = 300;
+const PARTICLE_SIZE = 0.15;
+const OPACITY = 0.06;
+const DRIFT_SPEED = 0.003;
+const COLOR = '#9090a8';
 
 export function BackgroundField() {
   const pointsRef = useRef<THREE.Points>(null);
@@ -13,25 +18,16 @@ export function BackgroundField() {
   const positions = useMemo(() => {
     const arr = new Float32Array(PARTICLE_COUNT * 3);
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      arr[i * 3] = (Math.random() - 0.5) * 300;
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 300;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 300;
+      arr[i * 3] = (Math.random() - 0.5) * SPREAD;
+      arr[i * 3 + 1] = (Math.random() - 0.5) * SPREAD;
+      arr[i * 3 + 2] = (Math.random() - 0.5) * SPREAD;
     }
     return arr;
   }, []);
 
-  const sizes = useMemo(() => {
-    const arr = new Float32Array(PARTICLE_COUNT);
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      arr[i] = Math.random() * 0.3 + 0.1;
-    }
-    return arr;
-  }, []);
-
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (!pointsRef.current) return;
-    pointsRef.current.rotation.y = clock.getElapsedTime() * 0.005;
-    pointsRef.current.rotation.x = Math.sin(clock.getElapsedTime() * 0.003) * 0.1;
+    pointsRef.current.rotation.y += DRIFT_SPEED;
   });
 
   return (
@@ -40,12 +36,12 @@ export function BackgroundField() {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        color="#00f0ff"
-        size={0.4}
+        color={COLOR}
+        size={PARTICLE_SIZE}
         transparent
-        opacity={0.15}
-        sizeAttenuation
+        opacity={OPACITY}
         depthWrite={false}
+        sizeAttenuation
       />
     </points>
   );
