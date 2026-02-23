@@ -35,10 +35,13 @@ export function AppShell() {
   const { zoomIn, zoomOut } = useGraphStore();
   const editorDividerRef = useRef<HTMLDivElement>(null);
   const sidebarDividerRef = useRef<HTMLDivElement>(null);
+  const chatDividerRef = useRef<HTMLDivElement>(null);
   const [editorDividerHover, setEditorDividerHover] = useState(false);
   const [sidebarDividerHover, setSidebarDividerHover] = useState(false);
+  const [chatDividerHover, setChatDividerHover] = useState(false);
   const [editorDragging, setEditorDragging] = useState(false);
   const [sidebarDragging, setSidebarDragging] = useState(false);
+  const [chatDragging, setChatDragging] = useState(false);
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -148,6 +151,33 @@ export function AppShell() {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
       setSidebarDragging(false);
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, []);
+
+  const handleChatDividerDrag = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = useUIStore.getState().chatWidth;
+
+    setChatDragging(true);
+
+    const onMouseMove = (e: MouseEvent) => {
+      const delta = startX - e.clientX;
+      const newWidth = Math.max(280, Math.min(800, startWidth + delta));
+      useUIStore.getState().setChatWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      setChatDragging(false);
     };
 
     document.body.style.cursor = 'col-resize';
@@ -318,6 +348,23 @@ export function AppShell() {
           }}
         >
           <EditorPanel />
+        </div>
+      )}
+
+      {/* Chat resize divider */}
+      {chatOpen && !editorCollapsed && (
+        <div
+          ref={chatDividerRef}
+          onMouseDown={handleChatDividerDrag}
+          onMouseEnter={() => setChatDividerHover(true)}
+          onMouseLeave={() => setChatDividerHover(false)}
+          className="flex-shrink-0 cursor-col-resize transition-colors relative"
+          style={{
+            width: 4,
+            backgroundColor: chatDragging || chatDividerHover ? '#2383e2' : 'rgba(255,255,255,0.06)',
+          }}
+        >
+          <div className="absolute inset-y-0 -left-2 -right-2" />
         </div>
       )}
 
