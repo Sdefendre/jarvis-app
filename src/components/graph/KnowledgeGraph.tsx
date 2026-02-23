@@ -15,10 +15,8 @@ export function KnowledgeGraph() {
   const { darkMode } = useUIStore();
   const { settings } = useGraphStore();
 
-  const bgColor = useMemo(
-    () => new THREE.Color(darkMode ? '#1a1a1a' : '#f7f7f8'),
-    [darkMode],
-  );
+  // Always deep space navy-black regardless of theme
+  const bgColor = useMemo(() => new THREE.Color('#050510'), []);
 
   return (
     <div className="w-full h-full">
@@ -27,10 +25,10 @@ export function KnowledgeGraph() {
         gl={{ antialias: true, alpha: false }}
         scene={{ background: bgColor }}
       >
-        {/* Lighting adjusts for theme */}
-        <ambientLight intensity={darkMode ? 0.4 : 1.2} />
-        <pointLight position={[80, 80, 80]} color="#ffffff" intensity={darkMode ? 0.3 : 0.8} />
-        <pointLight position={[-60, -40, 60]} color="#ffffff" intensity={darkMode ? 0.2 : 0.4} />
+        {/* Space lighting — dim ambient with blue-tinted point lights */}
+        <ambientLight intensity={0.3} />
+        <pointLight position={[80, 80, 80]} color="#aabbff" intensity={0.3} />
+        <pointLight position={[-60, -40, 60]} color="#8899dd" intensity={0.2} />
 
         <BackgroundField />
 
@@ -50,9 +48,9 @@ export function KnowledgeGraph() {
 
         <EffectComposer>
           <Bloom
-            luminanceThreshold={darkMode ? 0.1 : 0.2}
+            luminanceThreshold={0.1}
             luminanceSmoothing={0.9}
-            intensity={darkMode ? 1.2 : 0.6}
+            intensity={1.0}
             mipmapBlur
           />
         </EffectComposer>

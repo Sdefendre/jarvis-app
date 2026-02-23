@@ -6,6 +6,7 @@ interface GraphSettings {
   lineThickness: number;
   autoRotate: boolean;
   rotateSpeed: number;
+  lineColor: string;
 }
 
 interface GraphState {
@@ -30,6 +31,7 @@ export const useGraphStore = create<GraphState>((set) => ({
     lineThickness: 1,
     autoRotate: true,
     rotateSpeed: 0.15,
+    lineColor: '#27272a',
   },
 
   setHoveredNode: (id) => set({ hoveredNode: id }),

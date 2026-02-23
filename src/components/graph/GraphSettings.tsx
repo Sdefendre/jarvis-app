@@ -53,10 +53,10 @@ function SliderRow({
           alignItems: 'center',
         }}
       >
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary, #888)' }}>
+        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary, #71717a)' }}>
           {label}
         </span>
-        <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', color: 'var(--text, #111)' }}>
+        <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', color: 'var(--text, #09090b)' }}>
           {value.toFixed(step < 0.1 ? 2 : 1)}
         </span>
       </div>
@@ -72,7 +72,7 @@ function SliderRow({
           height: 4,
           appearance: 'none',
           WebkitAppearance: 'none',
-          background: 'var(--bg-secondary, #f5f5f5)',
+          background: 'var(--bg-secondary, #fafafa)',
           borderRadius: 2,
           outline: 'none',
           cursor: 'pointer',
@@ -103,7 +103,7 @@ function ToggleRow({
         alignItems: 'center',
       }}
     >
-      <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary, #888)' }}>
+      <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary, #71717a)' }}>
         {label}
       </span>
       <button
@@ -132,7 +132,7 @@ function ToggleRow({
             width: 14,
             height: 14,
             borderRadius: '50%',
-            background: '#fff',
+            background: 'var(--bg, #fff)',
             transition: 'left 0.15s ease',
             boxShadow: '0 1px 2px rgba(0,0,0,0.18)',
           }}
@@ -184,9 +184,9 @@ export function GraphSettings() {
           alignItems: 'center',
           justifyContent: 'center',
           borderRadius: 6,
-          border: '1px solid var(--border, #e0e0e0)',
+          border: '1px solid var(--border-subtle, #e4e4e7)',
           background: 'var(--bg, #fff)',
-          color: 'var(--text-secondary, #888)',
+          color: 'var(--text-secondary, #71717a)',
           cursor: 'pointer',
           padding: 0,
           transition: 'color 0.15s ease, border-color 0.15s ease',
@@ -204,7 +204,7 @@ export function GraphSettings() {
             right: 0,
             width: 220,
             background: 'var(--bg, #fff)',
-            border: '1px solid var(--border, #e0e0e0)',
+            border: '1px solid var(--border-subtle, #e4e4e7)',
             borderRadius: 10,
             boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
             padding: 14,
@@ -256,6 +256,27 @@ export function GraphSettings() {
             step={0.05}
             onChange={(v) => updateSettings({ rotateSpeed: v })}
           />
+
+          {/* Line Color */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary, #71717a)' }}>
+              Line Color
+            </span>
+            <input
+              type="color"
+              value={settings.lineColor || '#27272a'}
+              onChange={(e) => updateSettings({ lineColor: e.target.value })}
+              style={{
+                width: 28,
+                height: 20,
+                border: '1px solid var(--border-subtle, #e4e4e7)',
+                borderRadius: 4,
+                cursor: 'pointer',
+                padding: 0,
+                background: 'none',
+              }}
+            />
+          </div>
         </div>
       )}
     </div>

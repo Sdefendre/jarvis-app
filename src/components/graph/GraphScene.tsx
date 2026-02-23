@@ -109,6 +109,7 @@ export function GraphScene() {
             sourceCategory={categoryMap.get(edge.source) || 'archive'}
             highlighted={highlighted}
             lineThickness={settings.lineThickness}
+            lineColor={settings.lineColor}
           />
         );
       })}

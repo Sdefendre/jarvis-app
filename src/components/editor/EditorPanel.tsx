@@ -36,8 +36,8 @@ export function EditorPanel() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="text-3xl mb-2" style={{ color: '#ddd' }}>{ }</div>
-          <div className="text-sm" style={{ color: '#999' }}>Select a note or file to begin editing</div>
+          <div className="text-3xl mb-2" style={{ color: 'var(--text-dim, #a1a1aa)' }}>{ }</div>
+          <div className="text-sm" style={{ color: 'var(--text-dim, #a1a1aa)' }}>Select a note or file to begin editing</div>
         </div>
       </div>
     );
@@ -46,7 +46,7 @@ export function EditorPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* Tab bar */}
-      <div className="flex items-center h-9 overflow-x-auto pt-10" style={{ backgroundColor: '#fff', borderBottom: '1px solid var(--border, #c0c0c0)' }}>
+      <div className="flex items-center h-9 overflow-x-auto pt-10" style={{ backgroundColor: 'var(--bg, #fff)', borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}>
         {tabs.map((tab) => {
           const isActiveTab = tab.id === activeTabId;
           return (
@@ -54,12 +54,12 @@ export function EditorPanel() {
               key={tab.id}
               className="group flex items-center gap-1.5 px-3 h-full text-sm cursor-pointer transition-colors titlebar-no-drag"
               style={{
-                color: isActiveTab ? '#111' : '#888',
-                borderBottom: isActiveTab ? '2px solid #111' : '2px solid transparent',
+                color: isActiveTab ? 'var(--text, #09090b)' : 'var(--text-secondary, #71717a)',
+                borderBottom: isActiveTab ? '2px solid var(--text, #09090b)' : '2px solid transparent',
                 fontWeight: isActiveTab ? 500 : 400,
               }}
               onMouseEnter={(e) => {
-                if (!isActiveTab) e.currentTarget.style.backgroundColor = '#f5f5f5';
+                if (!isActiveTab) e.currentTarget.style.backgroundColor = 'var(--bg-secondary, #fafafa)';
               }}
               onMouseLeave={(e) => {
                 if (!isActiveTab) e.currentTarget.style.backgroundColor = 'transparent';
@@ -71,14 +71,14 @@ export function EditorPanel() {
             >
               {/* Dirty indicator */}
               {tab.isDirty && (
-                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: '#888' }} />
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--text-secondary, #71717a)' }} />
               )}
               <span className="truncate max-w-[120px]">{tab.name}</span>
               <button
                 className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ color: '#bbb', fontSize: '12px' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = '#111')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = '#bbb')}
+                style={{ color: 'var(--text-dim, #a1a1aa)', fontSize: '12px' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #09090b)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-dim, #a1a1aa)')}
                 onClick={(e) => {
                   e.stopPropagation();
                   closeTab(tab.id);
@@ -92,7 +92,7 @@ export function EditorPanel() {
       </div>
 
       {/* Breadcrumb */}
-      <div className="px-5 py-2 text-sm" style={{ color: '#999', borderBottom: '1px solid var(--border, #c0c0c0)', backgroundColor: '#fff' }}>
+      <div className="px-6 py-2.5 text-sm" style={{ color: 'var(--text-secondary, #71717a)', borderBottom: '1px solid var(--border-subtle, #e4e4e7)', backgroundColor: 'var(--bg, #fff)' }}>
         {activeTab.path.replace(/\//g, ' / ')}
       </div>
 

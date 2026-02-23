@@ -66,8 +66,8 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
       className="rounded text-xs overflow-hidden"
       style={{
         borderLeft: `3px solid ${borderColor}`,
-        backgroundColor: 'var(--bg-secondary, #f5f5f5)',
-        border: `1px solid var(--border, #c0c0c0)`,
+        backgroundColor: 'var(--bg-secondary, #fafafa)',
+        border: `1px solid var(--border-subtle, #e4e4e7)`,
         borderLeftWidth: 3,
         borderLeftColor: borderColor,
       }}
@@ -75,7 +75,7 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
       <button
         onClick={() => setExpanded((prev) => !prev)}
         className="flex items-center justify-between w-full px-2 py-1.5 text-left cursor-pointer"
-        style={{ color: 'var(--text, #111)' }}
+        style={{ color: 'var(--text, #09090b)' }}
       >
         <span className="flex items-center gap-1.5">
           <span
@@ -96,7 +96,7 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
           style={{
             transition: 'transform 150ms',
             transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-            color: 'var(--text-dim, #bbb)',
+            color: 'var(--text-dim, #a1a1aa)',
             fontSize: 10,
           }}
         >
@@ -107,14 +107,14 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
       {expanded && (
         <div
           className="px-2 pb-2 space-y-1.5"
-          style={{ borderTop: '1px solid var(--border, #c0c0c0)' }}
+          style={{ borderTop: '1px solid var(--border-subtle, #e4e4e7)' }}
         >
           {/* Args */}
           {Object.keys(toolCall.args).length > 0 && (
             <div className="pt-1.5">
               <div
                 className="text-[10px] uppercase tracking-wider mb-0.5 font-semibold"
-                style={{ color: 'var(--text-dim, #bbb)' }}
+                style={{ color: 'var(--text-dim, #a1a1aa)' }}
               >
                 Arguments
               </div>
@@ -123,7 +123,7 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
                 style={{
                   fontFamily: 'monospace',
                   backgroundColor: 'var(--bg, #fff)',
-                  color: 'var(--text, #111)',
+                  color: 'var(--text, #09090b)',
                   margin: 0,
                 }}
               >
@@ -137,7 +137,7 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
             <div>
               <div
                 className="text-[10px] uppercase tracking-wider mb-0.5 font-semibold"
-                style={{ color: 'var(--text-dim, #bbb)' }}
+                style={{ color: 'var(--text-dim, #a1a1aa)' }}
               >
                 Result
               </div>
@@ -146,7 +146,7 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
                 style={{
                   fontFamily: 'monospace',
                   backgroundColor: 'var(--bg, #fff)',
-                  color: 'var(--text, #111)',
+                  color: 'var(--text, #09090b)',
                   margin: 0,
                   maxHeight: 200,
                   overflowY: 'auto',
@@ -315,7 +315,7 @@ export function ChatPanel() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full pt-10" style={{ backgroundColor: 'var(--bg, #fff)' }}>
+    <div className="flex flex-col h-full pt-10" style={{ backgroundColor: 'var(--bg, #fff)', color: 'var(--text, #09090b)' }}>
       {/* Typing indicator keyframes */}
       <style>{`
         @keyframes typingDot {
@@ -327,13 +327,13 @@ export function ChatPanel() {
       {/* Header */}
       <div
         className="flex items-center justify-between px-3 py-2"
-        style={{ borderBottom: '1px solid var(--border, #c0c0c0)' }}
+        style={{ borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}
       >
         <div className="flex flex-col">
-          <span className="text-sm font-semibold" style={{ color: 'var(--text, #111)' }}>
+          <span className="text-sm font-semibold" style={{ color: 'var(--text, #09090b)' }}>
             AI Chat
           </span>
-          <span className="text-xs" style={{ color: 'var(--text-secondary, #888)' }}>
+          <span className="text-xs" style={{ color: 'var(--text-secondary, #71717a)' }}>
             {model || 'No model selected'}
           </span>
         </div>
@@ -342,9 +342,9 @@ export function ChatPanel() {
             <button
               onClick={clearChat}
               className="transition-colors text-xs"
-              style={{ color: 'var(--text-secondary, #888)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #111)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary, #888)')}
+              style={{ color: 'var(--text-secondary, #71717a)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #09090b)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary, #71717a)')}
             >
               Clear chat
             </button>
@@ -352,9 +352,9 @@ export function ChatPanel() {
           <button
             onClick={toggleChat}
             className="transition-colors text-sm"
-            style={{ color: 'var(--text-dim, #bbb)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #111)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-dim, #bbb)')}
+            style={{ color: 'var(--text-dim, #a1a1aa)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #09090b)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-dim, #a1a1aa)')}
           >
             &times;
           </button>
@@ -364,7 +364,7 @@ export function ChatPanel() {
       {/* Model Selector */}
       <div
         className="px-3 py-2 flex items-center gap-2"
-        style={{ borderBottom: '1px solid var(--border, #c0c0c0)' }}
+        style={{ borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}
       >
         {ollamaRunning && (
           <span
@@ -386,22 +386,22 @@ export function ChatPanel() {
           className="flex-1 text-sm rounded px-2 py-1.5 appearance-none cursor-pointer"
           style={{
             backgroundColor: 'var(--bg, #fff)',
-            border: '1px solid var(--border, #c0c0c0)',
-            color: 'var(--text, #111)',
+            border: '1px solid var(--border-subtle, #e4e4e7)',
+            color: 'var(--text, #09090b)',
             outline: 'none',
             backgroundImage:
-              'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23888\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
+              'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%2371717a\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'right 8px center',
             paddingRight: 28,
           }}
           onFocus={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.1)';
-            e.currentTarget.style.borderColor = '#999';
+            e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.08)';
+            e.currentTarget.style.borderColor = 'var(--border, #27272a)';
           }}
           onBlur={(e) => {
             e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = 'var(--border, #c0c0c0)';
+            e.currentTarget.style.borderColor = 'var(--border-subtle, #e4e4e7)';
           }}
         >
           {ollamaModels.length > 0 && (
@@ -441,11 +441,11 @@ export function ChatPanel() {
       </div>
 
       {/* System Prompt (collapsible) */}
-      <div style={{ borderBottom: '1px solid var(--border, #c0c0c0)' }}>
+      <div style={{ borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}>
         <button
           onClick={() => setShowSystemPrompt((prev) => !prev)}
           className="flex items-center gap-1.5 px-3 py-1.5 w-full text-left text-xs"
-          style={{ color: 'var(--text-secondary, #888)' }}
+          style={{ color: 'var(--text-secondary, #71717a)' }}
         >
           <span
             style={{
@@ -467,18 +467,18 @@ export function ChatPanel() {
               rows={4}
               className="w-full text-xs rounded p-2 resize-y focus:outline-none"
               style={{
-                backgroundColor: 'var(--bg-secondary, #f5f5f5)',
-                border: '1px solid var(--border, #c0c0c0)',
-                color: 'var(--text, #111)',
+                backgroundColor: 'var(--bg-secondary, #fafafa)',
+                border: '1px solid var(--border-subtle, #e4e4e7)',
+                color: 'var(--text, #09090b)',
                 fontFamily: 'monospace',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.1)';
-                e.currentTarget.style.borderColor = '#999';
+                e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.08)';
+                e.currentTarget.style.borderColor = 'var(--border, #27272a)';
               }}
               onBlur={(e) => {
                 e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = 'var(--border, #c0c0c0)';
+                e.currentTarget.style.borderColor = 'var(--border-subtle, #e4e4e7)';
               }}
             />
           </div>
@@ -489,10 +489,10 @@ export function ChatPanel() {
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
           <div className="text-sm text-center mt-8">
-            <p className="mb-2" style={{ color: 'var(--text-secondary, #888)' }}>
+            <p className="mb-2" style={{ color: 'var(--text-secondary, #71717a)' }}>
               Traces AI Assistant
             </p>
-            <p style={{ color: 'var(--text-dim, #bbb)', maxWidth: 260, margin: '0 auto' }}>
+            <p style={{ color: 'var(--text-dim, #a1a1aa)', maxWidth: 260, margin: '0 auto' }}>
               {emptyStateText}
             </p>
           </div>
@@ -505,14 +505,14 @@ export function ChatPanel() {
             style={
               msg.role === 'user'
                 ? {
-                    color: 'var(--text, #111)',
+                    color: 'var(--text, #09090b)',
                     backgroundColor: 'var(--bg, #fff)',
-                    border: '1px solid var(--border, #c0c0c0)',
+                    border: '1px solid var(--border-subtle, #e4e4e7)',
                   }
                 : {
-                    color: 'var(--text, #111)',
-                    borderLeft: '3px solid var(--text, #111)',
-                    backgroundColor: 'var(--bg-secondary, #f5f5f5)',
+                    color: 'var(--text, #09090b)',
+                    borderLeft: '3px solid var(--text, #09090b)',
+                    backgroundColor: 'var(--bg-secondary, #fafafa)',
                   }
             }
           >
@@ -544,7 +544,7 @@ export function ChatPanel() {
                   width: 6,
                   height: 6,
                   borderRadius: '50%',
-                  backgroundColor: 'var(--text-dim, #bbb)',
+                  backgroundColor: 'var(--text-dim, #a1a1aa)',
                   animation: 'typingDot 1.4s infinite',
                   animationDelay: `${i * 0.2}s`,
                 }}
@@ -568,7 +568,7 @@ export function ChatPanel() {
       </div>
 
       {/* Input */}
-      <div className="p-3" style={{ borderTop: '1px solid var(--border, #c0c0c0)' }}>
+      <div className="p-3" style={{ borderTop: '1px solid var(--border-subtle, #e4e4e7)' }}>
         <div className="flex gap-2">
           <input
             type="text"
@@ -578,29 +578,31 @@ export function ChatPanel() {
             placeholder="Ask Traces..."
             className="flex-1 px-3 py-2 text-sm rounded placeholder:text-gray-400 focus:outline-none"
             style={{
-              backgroundColor: 'var(--bg-secondary, #f5f5f5)',
-              border: '1px solid var(--border, #c0c0c0)',
-              color: 'var(--text, #111)',
+              backgroundColor: 'var(--bg, #fff)',
+              border: '1px solid var(--border-subtle, #e4e4e7)',
+              color: 'var(--text, #09090b)',
             }}
             onFocus={(e) => {
-              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.1)';
-              e.currentTarget.style.borderColor = '#999';
+              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.08)';
+              e.currentTarget.style.borderColor = 'var(--border, #27272a)';
             }}
             onBlur={(e) => {
               e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = 'var(--border, #c0c0c0)';
+              e.currentTarget.style.borderColor = 'var(--border-subtle, #e4e4e7)';
             }}
           />
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-3 py-2 text-sm rounded transition-colors disabled:opacity-50"
+            className="px-3 py-2 text-sm transition-colors disabled:opacity-50"
             style={{
-              backgroundColor: 'var(--text, #111)',
-              color: 'var(--bg, #fff)',
+              backgroundColor: 'var(--accent, #18181b)',
+              color: 'var(--accent-fg, #fff)',
+              borderRadius: 6,
+              fontWeight: 500,
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.opacity = '0.8')
+              (e.currentTarget.style.opacity = '0.9')
             }
             onMouseLeave={(e) =>
               (e.currentTarget.style.opacity = '1')

@@ -95,18 +95,18 @@ export function FileTree() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-3 py-2" style={{ paddingTop: '40px', borderBottom: '1px solid var(--border, #c0c0c0)' }}>
+      <div className="px-4 py-2" style={{ paddingTop: '40px', borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-bold truncate" style={{ color: 'var(--text, #111)' }}>
+          <span className="text-sm font-bold truncate" style={{ color: 'var(--text, #09090b)' }}>
             {vaultName}
           </span>
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={openFolder}
               className="transition-colors text-xs leading-none px-1"
-              style={{ color: '#787774' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#37352f')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#787774')}
+              style={{ color: 'var(--text-secondary, #71717a)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #09090b)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary, #71717a)')}
               title="Open Folder"
             >
               <svg
@@ -126,9 +126,9 @@ export function FileTree() {
             <button
               onClick={() => setCreating(true)}
               className="transition-colors text-lg leading-none"
-              style={{ color: '#787774' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#37352f')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#787774')}
+              style={{ color: 'var(--text-secondary, #71717a)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #09090b)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary, #71717a)')}
               title="New Note"
             >
               +
@@ -146,24 +146,24 @@ export function FileTree() {
                      placeholder:text-gray-400
                      focus:outline-none"
           style={{
-            backgroundColor: 'var(--bg-secondary, #f5f5f5)',
-            border: '1px solid var(--border, #c0c0c0)',
-            color: 'var(--text, #111)',
+            backgroundColor: 'var(--bg, #fff)',
+            border: '1px solid var(--border-subtle, #e4e4e7)',
+            color: 'var(--text, #09090b)',
           }}
           onFocus={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.1)';
-            e.currentTarget.style.borderColor = '#999';
+            e.currentTarget.style.boxShadow = 'none';
+            e.currentTarget.style.borderColor = 'var(--border, #27272a)';
           }}
           onBlur={(e) => {
             e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = 'var(--border, #c0c0c0)';
+            e.currentTarget.style.borderColor = 'var(--border-subtle, #e4e4e7)';
           }}
         />
       </div>
 
       {/* New file input */}
       {creating && (
-        <div className="px-3 py-2" style={{ borderBottom: '1px solid var(--border, #c0c0c0)' }}>
+        <div className="px-3 py-2" style={{ borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}>
           <input
             type="text"
             placeholder="Note name..."
@@ -176,14 +176,14 @@ export function FileTree() {
             autoFocus
             className="w-full px-2 py-1.5 text-xs rounded
                        placeholder:text-gray-400
-                       focus:outline-none focus:ring-2"
+                       focus:outline-none"
             style={{
-              backgroundColor: '#f7f7f8',
-              border: '1px solid #2383e2',
-              color: '#37352f',
+              backgroundColor: 'var(--bg, #fff)',
+              border: '1px solid var(--border, #27272a)',
+              color: 'var(--text, #09090b)',
             }}
             onFocus={(e) => {
-              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(35,131,226,0.25)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
             onBlur={(e) => {
               e.currentTarget.style.boxShadow = 'none';
@@ -207,7 +207,7 @@ export function FileTree() {
       </div>
 
       {/* Bottom bar: Dark mode + AI Chat + file count */}
-      <div className="px-3 py-3 space-y-2" style={{ borderTop: '1px solid var(--border, #c0c0c0)' }}>
+      <div className="px-3 py-3 space-y-2" style={{ borderTop: '1px solid var(--border, #27272a)' }}>
         {/* Dark mode toggle */}
         <button
           onClick={toggleDarkMode}
@@ -215,9 +215,9 @@ export function FileTree() {
             width: '100%',
             padding: '6px 12px',
             borderRadius: 8,
-            border: '1px solid var(--border, #c0c0c0)',
-            background: 'var(--bg-secondary, #f5f5f5)',
-            color: 'var(--text, #111)',
+            border: '1px solid var(--border, #27272a)',
+            background: 'var(--bg, #fff)',
+            color: 'var(--text, #09090b)',
             fontSize: 12,
             fontWeight: 500,
             cursor: 'pointer',
@@ -228,10 +228,10 @@ export function FileTree() {
             transition: 'background 0.2s',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'var(--border, #c0c0c0)';
+            e.currentTarget.style.background = 'var(--bg-secondary, #fafafa)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--bg-secondary, #f5f5f5)';
+            e.currentTarget.style.background = 'var(--bg, #fff)';
           }}
         >
           {darkMode ? '☀️' : '🌙'} {darkMode ? 'Light Mode' : 'Dark Mode'}
@@ -276,7 +276,7 @@ export function FileTree() {
           {chatOpen ? 'Close AI Chat' : 'AI Chat'}
         </button>
 
-        <div className="text-xs text-center" style={{ color: 'var(--text-dim, #bbb)' }}>
+        <div className="text-xs text-center" style={{ color: 'var(--text-dim, #a1a1aa)' }}>
           {files.length} notes
         </div>
       </div>
