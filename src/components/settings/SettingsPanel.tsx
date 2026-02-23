@@ -72,7 +72,7 @@ export function SettingsPanel() {
     <div className="flex flex-col h-full" style={{ color: 'var(--text)' }}>
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 pt-12 pb-3 relative z-[60]"
+        className="flex items-center justify-between px-4 pt-12 pb-3 relative z-[60] titlebar-drag"
         style={{ borderBottom: '1px solid var(--border)' }}
       >
         <span className="text-sm font-medium">Settings</span>

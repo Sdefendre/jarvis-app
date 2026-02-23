@@ -329,13 +329,13 @@ export function ChatPanel() {
 
       {/* Header — collapse + clear */}
       <div
-        className="flex items-center justify-between px-3 pt-10 pb-2 relative z-[60]"
+        className="flex items-center justify-between px-3 pt-10 pb-2 relative z-[60] titlebar-drag"
         style={{ borderBottom: '1px solid var(--border)' }}
       >
         <span className="text-sm text-muted-foreground">Chat</span>
         <div className="flex items-center gap-0.5">
           {messages.length > 0 && (
-            <Button variant="ghost" size="icon-xs" onClick={clearChat} title="Clear chat" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon-xs" onClick={clearChat} title="Clear chat" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
               <Eraser className="size-3" />
             </Button>
           )}

@@ -125,19 +125,19 @@ export function FileTree() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="py-3" style={{ paddingTop: '48px', paddingLeft: 28, paddingRight: 20, borderBottom: '1px solid var(--border)' }}>
+      <div className="py-3 titlebar-drag" style={{ paddingTop: '48px', paddingLeft: 28, paddingRight: 20, borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-bold truncate" style={{ color: 'var(--text)' }}>
             {vaultName}
           </span>
           <div className="flex items-center gap-0.5 shrink-0">
-            <Button variant="ghost" size="icon-xs" onClick={toggleSidebar} title="Collapse sidebar" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon-xs" onClick={toggleSidebar} title="Collapse sidebar" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
               <ChevronLeft className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon-xs" onClick={openFolder} title="Open Folder" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon-xs" onClick={openFolder} title="Open Folder" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
               <FolderOpen className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon-xs" onClick={() => setCreating(true)} title="New Note" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon-xs" onClick={() => setCreating(true)} title="New Note" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
               <Plus className="size-3.5" />
             </Button>
           </div>

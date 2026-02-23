@@ -208,7 +208,7 @@ export function AppShell() {
 
   return (
     <div className="flex h-screen overflow-hidden relative z-10">
-      <div className="fixed top-0 left-0 right-0 h-8 titlebar-drag z-50" />
+      <div className="fixed top-0 left-0 right-0 h-8 titlebar-drag z-40" />
 
       {/* Collapsed panel strip — all collapsed tabs grouped on the left */}
       {(sidebarCollapsed || graphCollapsed || editorCollapsed || !chatOpen) && (
@@ -232,7 +232,7 @@ export function AppShell() {
       {!sidebarCollapsed && (
         <>
           <div
-            className="panel-glass overflow-hidden"
+            className="panel-glass overflow-hidden relative z-[45]"
             style={{
               width: sidebarWidth,
               flexShrink: 0,
@@ -311,7 +311,7 @@ export function AppShell() {
       {/* Editor */}
       {!editorCollapsed && (
         <div
-          className="panel-glass overflow-hidden transition-all duration-300 ease-in-out"
+          className="panel-glass overflow-hidden transition-all duration-300 ease-in-out relative z-[45]"
           style={{
             ...(editorFlex ? { flex: '1 1 0%' } : { width: editorWidth, flexShrink: 0 }),
             borderLeft: '1px solid var(--glass-border)',
@@ -324,7 +324,7 @@ export function AppShell() {
       {/* Chat Panel */}
       {chatOpen && (
         <div
-          className="panel-glass overflow-hidden"
+          className="panel-glass overflow-hidden relative z-[45]"
           style={{
             ...(chatFlex ? { flex: '1 1 0%' } : { width: chatWidth, flexShrink: 0 }),
             borderLeft: '1px solid var(--glass-border)',
@@ -337,7 +337,7 @@ export function AppShell() {
       {/* Settings panel — slides from right */}
       {settingsOpen && (
         <div
-          className="panel-glass overflow-hidden"
+          className="panel-glass overflow-hidden relative z-[45]"
           style={{
             width: 300,
             flexShrink: 0,
