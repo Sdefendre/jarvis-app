@@ -10,10 +10,13 @@ interface UIState {
   sidebarCollapsed: boolean;
   editorCollapsed: boolean;
   editorLightMode: boolean;
+  previewMode: boolean;
+  settingsOpen: boolean;
 
   setSidebarWidth: (w: number) => void;
   setEditorWidth: (w: number) => void;
   toggleChat: () => void;
+  setChatOpen: (v: boolean) => void;
   setChatWidth: (w: number) => void;
   toggleGraphFullscreen: () => void;
   toggleGraphCollapsed: () => void;
@@ -21,6 +24,8 @@ interface UIState {
   toggleEditorCollapsed: () => void;
   setEditorCollapsed: (v: boolean) => void;
   toggleEditorTheme: () => void;
+  togglePreview: () => void;
+  toggleSettings: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -33,10 +38,13 @@ export const useUIStore = create<UIState>((set) => ({
   sidebarCollapsed: false,
   editorCollapsed: false,
   editorLightMode: false,
+  previewMode: false,
+  settingsOpen: false,
 
   setSidebarWidth: (w) => set({ sidebarWidth: w }),
   setEditorWidth: (w) => set({ editorWidth: w }),
   toggleChat: () => set((s) => ({ chatOpen: !s.chatOpen })),
+  setChatOpen: (v) => set({ chatOpen: v }),
   setChatWidth: (w) => set({ chatWidth: w }),
   toggleGraphFullscreen: () =>
     set((s) => ({ graphFullscreen: !s.graphFullscreen })),
@@ -49,4 +57,8 @@ export const useUIStore = create<UIState>((set) => ({
   setEditorCollapsed: (v) => set({ editorCollapsed: v }),
   toggleEditorTheme: () =>
     set((s) => ({ editorLightMode: !s.editorLightMode })),
+  togglePreview: () =>
+    set((s) => ({ previewMode: !s.previewMode })),
+  toggleSettings: () =>
+    set((s) => ({ settingsOpen: !s.settingsOpen })),
 }));
