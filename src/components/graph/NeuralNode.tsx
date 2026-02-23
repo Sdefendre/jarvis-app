@@ -8,7 +8,6 @@ import * as THREE from 'three';
 import type { GraphNode, NodeCategory } from '@/types';
 import { CATEGORY_COLORS } from '@/types';
 import { useGraphStore } from '@/stores/graph-store';
-import { useUIStore } from '@/stores/ui-store';
 
 interface NeuralNodeProps {
   node: GraphNode;
@@ -24,7 +23,6 @@ export function NeuralNode({ node, position, isConnected, onSelect, nodeSize, sh
   const ringRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   const { hoveredNode, setHoveredNode } = useGraphStore();
-  const { darkMode } = useUIStore();
 
   const categoryColor = CATEGORY_COLORS[node.category as NodeCategory] || CATEGORY_COLORS.archive;
   const catColor = useMemo(() => new THREE.Color(categoryColor), [categoryColor]);
@@ -117,7 +115,7 @@ export function NeuralNode({ node, position, isConnected, onSelect, nodeSize, sh
         <Html position={position} center style={{ pointerEvents: 'none' }}>
           <div
             style={{
-              color: darkMode ? '#e5e5e5' : '#333',
+              color: '#e5e5e5',
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
               fontSize: '10px',
               fontWeight: hovered ? 600 : 400,
@@ -126,7 +124,7 @@ export function NeuralNode({ node, position, isConnected, onSelect, nodeSize, sh
               transform: `translateY(-${radius * 8 + 14}px)`,
               textAlign: 'center',
               opacity: hovered ? 1 : 0.7,
-              textShadow: darkMode ? '0 1px 3px rgba(0,0,0,0.5)' : '0 1px 2px rgba(255,255,255,0.8)',
+              textShadow: '0 1px 3px rgba(0,0,0,0.5)',
             }}
           >
             {node.label}

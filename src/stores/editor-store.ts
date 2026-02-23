@@ -12,6 +12,7 @@ interface EditorState {
   markClean: (id: string) => void;
   saveTab: (id: string) => Promise<void>;
   getActiveTab: () => EditorTab | null;
+  reloadTab: (path: string) => Promise<void>;
 }
 
 function pathToId(p: string) {
@@ -86,5 +87,21 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   getActiveTab: () => {
     const { tabs, activeTabId } = get();
     return tabs.find((t) => t.id === activeTabId) || null;
+  },
+
+  reloadTab: async (path) => {
+    const id = pathToId(path);
+    const existing = get().tabs.find((t) => t.id === id);
+    if (!existing) return;
+    try {
+      const content = await electronAPI.readFile(path);
+      set((state) => ({
+        tabs: state.tabs.map((t) =>
+          t.id === id ? { ...t, content, isDirty: false } : t
+        ),
+      }));
+    } catch {
+      // File may have been deleted
+    }
   },
 }));

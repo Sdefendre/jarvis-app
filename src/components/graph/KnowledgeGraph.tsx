@@ -7,12 +7,10 @@ import { OrbitControls } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { GraphScene } from './GraphScene';
 import { BackgroundField } from './BackgroundField';
-import { useUIStore } from '@/stores/ui-store';
 import { useGraphStore } from '@/stores/graph-store';
 import * as THREE from 'three';
 
 export function KnowledgeGraph() {
-  const { darkMode } = useUIStore();
   const { settings } = useGraphStore();
 
   // Always deep space navy-black regardless of theme

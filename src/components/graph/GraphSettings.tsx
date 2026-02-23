@@ -18,9 +18,7 @@ function GearIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {/* outer gear teeth (simplified 6-tooth gear) */}
       <path d="M6.8 1.5h2.4l.3 1.7a5 5 0 0 1 1.2.7l1.6-.6.9 1.6-1.3 1.1a5 5 0 0 1 0 1.4l1.3 1.1-.9 1.6-1.6-.6a5 5 0 0 1-1.2.7l-.3 1.7H6.8l-.3-1.7a5 5 0 0 1-1.2-.7l-1.6.6-.9-1.6 1.3-1.1a5 5 0 0 1 0-1.4L2.8 4.9l.9-1.6 1.6.6a5 5 0 0 1 1.2-.7l.3-1.7Z" />
-      {/* center circle */}
       <circle cx="8" cy="8" r="2" />
     </svg>
   );
@@ -53,10 +51,10 @@ function SliderRow({
           alignItems: 'center',
         }}
       >
-        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary, #71717a)' }}>
+        <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary)' }}>
           {label}
         </span>
-        <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', color: 'var(--text, #09090b)' }}>
+        <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', color: 'var(--text)' }}>
           {value.toFixed(step < 0.1 ? 2 : 1)}
         </span>
       </div>
@@ -72,7 +70,7 @@ function SliderRow({
           height: 4,
           appearance: 'none',
           WebkitAppearance: 'none',
-          background: 'var(--bg-secondary, #fafafa)',
+          background: 'rgba(255,255,255,0.08)',
           borderRadius: 2,
           outline: 'none',
           cursor: 'pointer',
@@ -103,7 +101,7 @@ function ToggleRow({
         alignItems: 'center',
       }}
     >
-      <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary, #71717a)' }}>
+      <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary)' }}>
         {label}
       </span>
       <button
@@ -119,7 +117,7 @@ function ToggleRow({
           border: 'none',
           padding: 0,
           cursor: 'pointer',
-          background: checked ? '#6366f1' : '#ccc',
+          background: checked ? '#6366f1' : 'rgba(255,255,255,0.15)',
           transition: 'background 0.15s ease',
           flexShrink: 0,
         }}
@@ -132,9 +130,9 @@ function ToggleRow({
             width: 14,
             height: 14,
             borderRadius: '50%',
-            background: 'var(--bg, #fff)',
+            background: '#fff',
             transition: 'left 0.15s ease',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.18)',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
           }}
         />
       </button>
@@ -177,20 +175,16 @@ export function GraphSettings() {
         type="button"
         aria-label="Graph settings"
         onClick={() => setOpen((prev) => !prev)}
+        className="flex h-6 w-6 items-center justify-center rounded text-sm transition-colors"
         style={{
-          width: 24,
-          height: 24,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: 6,
-          border: '1px solid var(--border-subtle, #e4e4e7)',
-          background: 'var(--bg, #fff)',
-          color: 'var(--text-secondary, #71717a)',
+          color: 'var(--text-secondary)',
+          background: 'none',
+          border: 'none',
           cursor: 'pointer',
           padding: 0,
-          transition: 'color 0.15s ease, border-color 0.15s ease',
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
+        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
       >
         <GearIcon />
       </button>
@@ -200,17 +194,20 @@ export function GraphSettings() {
         <div
           style={{
             position: 'absolute',
-            top: 30,
+            top: 32,
             right: 0,
             width: 220,
-            background: 'var(--bg, #fff)',
-            border: '1px solid var(--border-subtle, #e4e4e7)',
+            background: 'rgba(10, 10, 20, 0.95)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.08)',
             borderRadius: 10,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
             padding: 14,
             display: 'flex',
             flexDirection: 'column',
             gap: 14,
+            zIndex: 60,
           }}
         >
           {/* Node Size */}
@@ -259,7 +256,7 @@ export function GraphSettings() {
 
           {/* Line Color */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary, #71717a)' }}>
+            <span style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--text-secondary)' }}>
               Line Color
             </span>
             <input
@@ -269,7 +266,7 @@ export function GraphSettings() {
               style={{
                 width: 28,
                 height: 20,
-                border: '1px solid var(--border-subtle, #e4e4e7)',
+                border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 4,
                 cursor: 'pointer',
                 padding: 0,

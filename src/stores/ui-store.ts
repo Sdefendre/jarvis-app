@@ -7,7 +7,8 @@ interface UIState {
   chatWidth: number;
   graphFullscreen: boolean;
   graphCollapsed: boolean;
-  darkMode: boolean;
+  sidebarCollapsed: boolean;
+  editorLightMode: boolean;
 
   setSidebarWidth: (w: number) => void;
   setEditorWidth: (w: number) => void;
@@ -15,7 +16,8 @@ interface UIState {
   setChatWidth: (w: number) => void;
   toggleGraphFullscreen: () => void;
   toggleGraphCollapsed: () => void;
-  toggleDarkMode: () => void;
+  toggleSidebar: () => void;
+  toggleEditorTheme: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -25,7 +27,8 @@ export const useUIStore = create<UIState>((set) => ({
   chatWidth: 360,
   graphFullscreen: false,
   graphCollapsed: false,
-  darkMode: false,
+  sidebarCollapsed: false,
+  editorLightMode: false,
 
   setSidebarWidth: (w) => set({ sidebarWidth: w }),
   setEditorWidth: (w) => set({ editorWidth: w }),
@@ -35,12 +38,8 @@ export const useUIStore = create<UIState>((set) => ({
     set((s) => ({ graphFullscreen: !s.graphFullscreen })),
   toggleGraphCollapsed: () =>
     set((s) => ({ graphCollapsed: !s.graphCollapsed })),
-  toggleDarkMode: () =>
-    set((s) => {
-      const next = !s.darkMode;
-      if (typeof document !== 'undefined') {
-        document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
-      }
-      return { darkMode: next };
-    }),
+  toggleSidebar: () =>
+    set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
+  toggleEditorTheme: () =>
+    set((s) => ({ editorLightMode: !s.editorLightMode })),
 }));

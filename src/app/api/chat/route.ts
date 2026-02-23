@@ -19,6 +19,7 @@ interface ChatRequest {
   model: string;
   apiKey?: string;
   vaultPath?: string;
+  systemPrompt?: string;
 }
 
 interface ToolCallRecord {
@@ -334,9 +335,10 @@ async function handleAnthropic(
   model: string,
   apiKey: string,
   vaultRoot: string,
+  sysPrompt: string = SYSTEM_PROMPT,
 ): Promise<{ message: string; toolCalls: ToolCallRecord[] }> {
   // Separate system prompt; Anthropic only accepts user / assistant roles.
-  let systemPrompt = SYSTEM_PROMPT;
+  let systemPrompt = sysPrompt;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const anthropicMessages: any[] = [];
 
@@ -366,7 +368,7 @@ async function handleAnthropic(
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'anthropic-version': '2024-10-22',
       },
       body: JSON.stringify(body),
     });
@@ -435,6 +437,7 @@ async function handleOpenAI(
   model: string,
   apiKey: string,
   vaultRoot: string,
+  sysPrompt: string = SYSTEM_PROMPT,
 ): Promise<{ message: string; toolCalls: ToolCallRecord[] }> {
   const tools = toolsForOpenAI();
   const toolCalls: ToolCallRecord[] = [];
@@ -443,13 +446,13 @@ async function handleOpenAI(
   // Build the message array with our system prompt prepended
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const openaiMessages: any[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: sysPrompt },
   ];
 
   for (const msg of messages) {
     if (msg.role === 'system') {
       // Merge user-provided system prompt into the first system message
-      openaiMessages[0].content = msg.content + '\n\n' + SYSTEM_PROMPT;
+      openaiMessages[0].content = msg.content + '\n\n' + sysPrompt;
     } else {
       openaiMessages.push({ role: msg.role, content: msg.content });
     }
@@ -531,6 +534,7 @@ async function handleXAI(
   model: string,
   apiKey: string,
   vaultRoot: string,
+  sysPrompt: string = SYSTEM_PROMPT,
 ): Promise<{ message: string; toolCalls: ToolCallRecord[] }> {
   const tools = toolsForOpenAI();
   const toolCalls: ToolCallRecord[] = [];
@@ -538,12 +542,12 @@ async function handleXAI(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const xaiMessages: any[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: sysPrompt },
   ];
 
   for (const msg of messages) {
     if (msg.role === 'system') {
-      xaiMessages[0].content = msg.content + '\n\n' + SYSTEM_PROMPT;
+      xaiMessages[0].content = msg.content + '\n\n' + sysPrompt;
     } else {
       xaiMessages.push({ role: msg.role, content: msg.content });
     }
@@ -621,6 +625,7 @@ async function handleOllama(
   messages: ChatMessage[],
   model: string,
   vaultRoot: string,
+  sysPrompt: string = SYSTEM_PROMPT,
 ): Promise<{ message: string; toolCalls: ToolCallRecord[] }> {
   const tools = toolsForOpenAI();
   const toolCalls: ToolCallRecord[] = [];
@@ -628,12 +633,12 @@ async function handleOllama(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ollamaMessages: any[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: sysPrompt },
   ];
 
   for (const msg of messages) {
     if (msg.role === 'system') {
-      ollamaMessages[0].content = msg.content + '\n\n' + SYSTEM_PROMPT;
+      ollamaMessages[0].content = msg.content + '\n\n' + sysPrompt;
     } else {
       ollamaMessages.push({ role: msg.role, content: msg.content });
     }
@@ -730,7 +735,7 @@ async function handleOllama(
 
 export async function POST(req: Request) {
   try {
-    const { messages, provider, model, apiKey, vaultPath } =
+    const { messages, provider, model, apiKey, vaultPath, systemPrompt: customSystemPrompt } =
       (await req.json()) as ChatRequest;
 
     if (!messages || !provider || !model) {
@@ -745,9 +750,12 @@ export async function POST(req: Request) {
       process.env.VAULT_PATH ||
       path.join(process.env.HOME || '', 'Desktop/Traces Notes');
 
+    // Use custom system prompt if provided, otherwise default
+    const sysPrompt = customSystemPrompt || SYSTEM_PROMPT;
+
     // ----- Ollama (no key needed) -----
     if (provider === 'ollama') {
-      const result = await handleOllama(messages, model, vaultRoot);
+      const result = await handleOllama(messages, model, vaultRoot, sysPrompt);
       return NextResponse.json(result);
     }
 
@@ -760,7 +768,7 @@ export async function POST(req: Request) {
           { status: 503 },
         );
       }
-      const result = await handleOpenAI(messages, model, key, vaultRoot);
+      const result = await handleOpenAI(messages, model, key, vaultRoot, sysPrompt);
       return NextResponse.json(result);
     }
 
@@ -773,7 +781,7 @@ export async function POST(req: Request) {
           { status: 503 },
         );
       }
-      const result = await handleAnthropic(messages, model, key, vaultRoot);
+      const result = await handleAnthropic(messages, model, key, vaultRoot, sysPrompt);
       return NextResponse.json(result);
     }
 
@@ -786,7 +794,7 @@ export async function POST(req: Request) {
           { status: 503 },
         );
       }
-      const result = await handleXAI(messages, model, key, vaultRoot);
+      const result = await handleXAI(messages, model, key, vaultRoot, sysPrompt);
       return NextResponse.json(result);
     }
 

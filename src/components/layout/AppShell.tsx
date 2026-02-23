@@ -19,8 +19,11 @@ export function AppShell() {
     chatWidth,
     graphFullscreen,
     graphCollapsed,
+    sidebarCollapsed,
     toggleGraphFullscreen,
     toggleGraphCollapsed,
+    toggleSidebar,
+    toggleChat,
   } = useUIStore();
   const editorDividerRef = useRef<HTMLDivElement>(null);
   const sidebarDividerRef = useRef<HTMLDivElement>(null);
@@ -108,12 +111,12 @@ export function AppShell() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ backgroundColor: 'var(--bg, #fff)' }}>
+      <div className="flex items-center justify-center h-screen relative z-10">
         <div className="text-center">
-          <div className="text-2xl font-semibold mb-4" style={{ color: 'var(--text, #111)' }}>
+          <div className="text-2xl font-semibold mb-4" style={{ color: 'var(--text)' }}>
             TRACES
           </div>
-          <div className="text-sm" style={{ color: 'var(--text-secondary, #888)' }}>Loading your knowledge graph...</div>
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>Loading your knowledge graph...</div>
         </div>
       </div>
     );
@@ -122,19 +125,18 @@ export function AppShell() {
   /* ---- Fullscreen overlay ---- */
   if (graphFullscreen) {
     return (
-      <div className="fixed inset-0 z-[100]" style={{ backgroundColor: 'var(--bg, #fff)' }}>
+      <div className="fixed inset-0 z-[100]">
         {/* Title bar drag region */}
         <div className="fixed top-0 left-0 right-0 h-8 titlebar-drag z-[110]" />
 
         <KnowledgeGraph />
 
         {/* Floating toolbar — exit fullscreen only */}
-        <div
-          className="fixed top-10 right-3 z-[120] flex gap-1 rounded-xl px-2 py-1.5 glass"
-        >
+        <div className="fixed top-10 right-3 z-[120] flex gap-1 rounded-xl px-2 py-1.5 glass">
           <button
             onClick={toggleGraphFullscreen}
-            className="flex h-6 w-6 items-center justify-center rounded text-sm text-gray-400 hover:text-gray-800 transition-colors"
+            className="flex h-6 w-6 items-center justify-center rounded text-sm transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
             title="Exit fullscreen"
           >
             ✕
@@ -145,36 +147,56 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--bg, #fff)' }}>
+    <div className="flex h-screen overflow-hidden relative z-10">
       {/* Title bar drag region */}
       <div className="fixed top-0 left-0 right-0 h-8 titlebar-drag z-50" />
 
-      {/* Sidebar */}
-      <div
-        className="flex-shrink-0 border-r border-border bg-surface/50 overflow-hidden"
-        style={{ width: sidebarWidth }}
-      >
-        <FileTree />
-      </div>
+      {/* Sidebar collapse expand button (shown when sidebar is collapsed) */}
+      {sidebarCollapsed && (
+        <div className="flex-shrink-0 flex items-start pt-10 px-1">
+          <button
+            onClick={toggleSidebar}
+            title="Expand sidebar"
+            className="glass rounded-lg p-1.5 transition-all hover:scale-105"
+            style={{ color: 'var(--text-secondary)' }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </div>
+      )}
 
-      {/* Sidebar resize divider */}
-      <div
-        ref={sidebarDividerRef}
-        onMouseDown={handleSidebarDividerDrag}
-        onMouseEnter={() => setSidebarDividerHover(true)}
-        onMouseLeave={() => setSidebarDividerHover(false)}
-        className="flex-shrink-0 cursor-col-resize transition-colors relative"
-        style={{
-          width: 4,
-          backgroundColor:
-            sidebarDragging || sidebarDividerHover
-              ? '#2383e2'
-              : 'var(--border, #c0c0c0)',
-        }}
-      >
-        {/* Invisible wider hit area */}
-        <div className="absolute inset-y-0 -left-2 -right-2" />
-      </div>
+      {/* Sidebar */}
+      {!sidebarCollapsed && (
+        <>
+          <div
+            className="flex-shrink-0 panel-glass overflow-hidden"
+            style={{ width: sidebarWidth, borderRight: '1px solid var(--glass-border)' }}
+          >
+            <FileTree />
+          </div>
+
+          {/* Sidebar resize divider */}
+          <div
+            ref={sidebarDividerRef}
+            onMouseDown={handleSidebarDividerDrag}
+            onMouseEnter={() => setSidebarDividerHover(true)}
+            onMouseLeave={() => setSidebarDividerHover(false)}
+            className="flex-shrink-0 cursor-col-resize transition-colors relative"
+            style={{
+              width: 4,
+              backgroundColor:
+                sidebarDragging || sidebarDividerHover
+                  ? '#2383e2'
+                  : 'rgba(255,255,255,0.06)',
+            }}
+          >
+            {/* Invisible wider hit area */}
+            <div className="absolute inset-y-0 -left-2 -right-2" />
+          </div>
+        </>
+      )}
 
       {/* Graph */}
       <div
@@ -189,13 +211,11 @@ export function AppShell() {
 
         {/* Floating toolbar — collapse, fullscreen, settings */}
         {!graphCollapsed && (
-          <div
-            className="absolute top-10 right-3 z-30 flex items-center gap-1 rounded-xl px-2 py-1.5 glass"
-          >
+          <div className="absolute top-10 right-3 z-30 flex items-center gap-1 rounded-xl px-2 py-1.5 glass">
             <button
               onClick={toggleGraphCollapsed}
               className="flex h-6 w-6 items-center justify-center rounded text-sm transition-colors"
-              style={{ color: 'var(--text-secondary, #888)' }}
+              style={{ color: 'var(--text-secondary)' }}
               title="Collapse graph"
             >
               −
@@ -203,7 +223,7 @@ export function AppShell() {
             <button
               onClick={toggleGraphFullscreen}
               className="flex h-6 w-6 items-center justify-center rounded text-sm transition-colors"
-              style={{ color: 'var(--text-secondary, #888)' }}
+              style={{ color: 'var(--text-secondary)' }}
               title="Fullscreen"
             >
               ⛶
@@ -213,37 +233,14 @@ export function AppShell() {
         )}
       </div>
 
-      {/* Colorful expand button when graph is collapsed */}
+      {/* Expand graph button when collapsed */}
       {graphCollapsed && (
         <div className="flex-shrink-0 flex flex-col items-center pt-10 px-1">
           <button
             onClick={toggleGraphCollapsed}
             title="Expand graph"
-            style={{
-              background: 'linear-gradient(135deg, #2383e2, #9b59b6)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 16,
-              padding: '6px 14px',
-              minHeight: 32,
-              fontSize: 13,
-              fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(35, 131, 226, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              whiteSpace: 'nowrap',
-              transition: 'box-shadow 0.2s, transform 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = '0 4px 14px rgba(35, 131, 226, 0.45)';
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(35, 131, 226, 0.3)';
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+            className="glass rounded-2xl px-3.5 py-1.5 text-sm font-semibold flex items-center gap-1.5 transition-all hover:scale-105"
+            style={{ color: 'var(--text)' }}
           >
             <span style={{ fontSize: 15 }}>◧</span>
             Graph
@@ -251,7 +248,7 @@ export function AppShell() {
         </div>
       )}
 
-      {/* Editor resize divider — always visible */}
+      {/* Editor resize divider */}
       <div
         ref={editorDividerRef}
         onMouseDown={handleEditorDividerDrag}
@@ -263,7 +260,7 @@ export function AppShell() {
           backgroundColor:
             editorDragging || editorDividerHover
               ? '#2383e2'
-              : 'var(--border, #c0c0c0)',
+              : 'rgba(255,255,255,0.06)',
         }}
       >
         {/* Invisible wider hit area */}
@@ -272,11 +269,12 @@ export function AppShell() {
 
       {/* Editor */}
       <div
-        className="border-l border-border overflow-hidden transition-all duration-300 ease-in-out"
+        className="panel-glass overflow-hidden transition-all duration-300 ease-in-out"
         style={{
           ...(graphCollapsed
             ? { flex: '1 1 0%' }
             : { width: editorWidth, flexShrink: 0 }),
+          borderLeft: '1px solid var(--glass-border)',
         }}
       >
         <EditorPanel />
@@ -285,11 +283,33 @@ export function AppShell() {
       {/* Chat Panel */}
       {chatOpen && (
         <div
-          className="flex-shrink-0 border-l border-border bg-surface/50 overflow-hidden"
-          style={{ width: chatWidth }}
+          className="flex-shrink-0 panel-glass overflow-hidden"
+          style={{ width: chatWidth, borderLeft: '1px solid var(--glass-border)' }}
         >
           <ChatPanel />
         </div>
+      )}
+
+      {/* Floating AI Chat button (when chat is closed) */}
+      {!chatOpen && (
+        <button
+          onClick={toggleChat}
+          className="fixed bottom-5 right-5 z-50 rounded-2xl px-4 py-2.5 flex items-center gap-2 transition-all hover:scale-105"
+          style={{
+            background: 'linear-gradient(135deg, rgba(35,131,226,0.35), rgba(155,89,182,0.35))',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#fff',
+            fontSize: 13,
+            fontWeight: 600,
+            boxShadow: '0 4px 20px rgba(35,131,226,0.25)',
+            cursor: 'pointer',
+          }}
+        >
+          <span style={{ fontSize: 15 }}>&#10024;</span>
+          AI Chat
+        </button>
       )}
     </div>
   );

@@ -3,12 +3,21 @@
 import { useCallback, useEffect } from 'react';
 import { useEditorStore } from '@/stores/editor-store';
 import { useVaultStore } from '@/stores/vault-store';
+import { useUIStore } from '@/stores/ui-store';
 import { MarkdownEditor } from './MarkdownEditor';
 
 export function EditorPanel() {
   const { tabs, activeTabId, closeTab } = useEditorStore();
   const { activeFile } = useVaultStore();
+  const { editorLightMode, toggleEditorTheme } = useUIStore();
   const activeTab = tabs.find((t) => t.id === activeTabId);
+
+  // Editor-specific colors based on light/dark mode
+  const editorBg = editorLightMode ? '#ffffff' : 'transparent';
+  const editorText = editorLightMode ? '#09090b' : 'var(--text)';
+  const editorSecondary = editorLightMode ? '#71717a' : 'var(--text-secondary)';
+  const editorBorder = editorLightMode ? '#e4e4e7' : 'var(--border)';
+  const editorHover = editorLightMode ? '#f4f4f5' : 'rgba(255,255,255,0.04)';
 
   // Listen for wiki-link navigation events
   useEffect(() => {
@@ -36,17 +45,20 @@ export function EditorPanel() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <div className="text-3xl mb-2" style={{ color: 'var(--text-dim, #a1a1aa)' }}>{ }</div>
-          <div className="text-sm" style={{ color: 'var(--text-dim, #a1a1aa)' }}>Select a note or file to begin editing</div>
+          <div className="text-3xl mb-2" style={{ color: 'var(--text-dim)' }}>{ }</div>
+          <div className="text-sm" style={{ color: 'var(--text-dim)' }}>Select a note or file to begin editing</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" style={{ backgroundColor: editorBg, color: editorText, transition: 'background-color 0.3s, color 0.3s' }}>
       {/* Tab bar */}
-      <div className="flex items-center h-9 overflow-x-auto pt-10" style={{ backgroundColor: 'var(--bg, #fff)', borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}>
+      <div
+        className="flex items-center h-9 overflow-x-auto pt-8"
+        style={{ borderBottom: `1px solid ${editorBorder}` }}
+      >
         {tabs.map((tab) => {
           const isActiveTab = tab.id === activeTabId;
           return (
@@ -54,12 +66,12 @@ export function EditorPanel() {
               key={tab.id}
               className="group flex items-center gap-1.5 px-3 h-full text-sm cursor-pointer transition-colors titlebar-no-drag"
               style={{
-                color: isActiveTab ? 'var(--text, #09090b)' : 'var(--text-secondary, #71717a)',
-                borderBottom: isActiveTab ? '2px solid var(--text, #09090b)' : '2px solid transparent',
+                color: isActiveTab ? editorText : editorSecondary,
+                borderBottom: isActiveTab ? `2px solid ${editorText}` : '2px solid transparent',
                 fontWeight: isActiveTab ? 500 : 400,
               }}
               onMouseEnter={(e) => {
-                if (!isActiveTab) e.currentTarget.style.backgroundColor = 'var(--bg-secondary, #fafafa)';
+                if (!isActiveTab) e.currentTarget.style.backgroundColor = editorHover;
               }}
               onMouseLeave={(e) => {
                 if (!isActiveTab) e.currentTarget.style.backgroundColor = 'transparent';
@@ -69,16 +81,15 @@ export function EditorPanel() {
                 useVaultStore.getState().setActiveFile(tab.path);
               }}
             >
-              {/* Dirty indicator */}
               {tab.isDirty && (
-                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: 'var(--text-secondary, #71717a)' }} />
+                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: editorSecondary }} />
               )}
               <span className="truncate max-w-[120px]">{tab.name}</span>
               <button
                 className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                style={{ color: 'var(--text-dim, #a1a1aa)', fontSize: '12px' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #09090b)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-dim, #a1a1aa)')}
+                style={{ color: editorLightMode ? '#a1a1aa' : 'var(--text-dim)', fontSize: '12px' }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = editorText)}
+                onMouseLeave={(e) => (e.currentTarget.style.color = editorLightMode ? '#a1a1aa' : 'var(--text-dim)')}
                 onClick={(e) => {
                   e.stopPropagation();
                   closeTab(tab.id);
@@ -91,13 +102,34 @@ export function EditorPanel() {
         })}
       </div>
 
-      {/* Breadcrumb */}
-      <div className="px-6 py-2.5 text-sm" style={{ color: 'var(--text-secondary, #71717a)', borderBottom: '1px solid var(--border-subtle, #e4e4e7)', backgroundColor: 'var(--bg, #fff)' }}>
-        {activeTab.path.replace(/\//g, ' / ')}
+      {/* Breadcrumb + theme toggle */}
+      <div
+        className="flex items-center justify-between px-6 py-2"
+        style={{ borderBottom: `1px solid ${editorBorder}` }}
+      >
+        <span className="text-sm" style={{ color: editorSecondary }}>
+          {activeTab.path.replace(/\//g, ' / ')}
+        </span>
+        <button
+          onClick={toggleEditorTheme}
+          className="transition-colors text-xs px-2 py-1 rounded"
+          style={{
+            color: editorSecondary,
+            border: `1px solid ${editorBorder}`,
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = editorText)}
+          onMouseLeave={(e) => (e.currentTarget.style.color = editorSecondary)}
+          title={editorLightMode ? 'Switch to dark editor' : 'Switch to light editor'}
+        >
+          {editorLightMode ? 'Dark' : 'Light'}
+        </button>
       </div>
 
       {/* Editor */}
-      <div className="flex-1 overflow-hidden">
+      <div
+        className="flex-1 overflow-hidden"
+        data-editor-theme={editorLightMode ? 'light' : 'dark'}
+      >
         <MarkdownEditor tabId={activeTab.id} content={activeTab.content} />
       </div>
     </div>

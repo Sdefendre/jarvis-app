@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useUIStore } from '@/stores/ui-store';
+import { useVaultStore } from '@/stores/vault-store';
+import { useEditorStore } from '@/stores/editor-store';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -25,7 +27,7 @@ interface OllamaModel {
   model: string;
 }
 
-// Hard-coded cloud model options
+// Hard-coded cloud model options (use short aliases)
 const OPENAI_MODELS = ['gpt-4o', 'gpt-4o-mini'];
 const CLAUDE_MODELS = [
   'claude-opus-4-6-20250514',
@@ -35,23 +37,37 @@ const CLAUDE_MODELS = [
 ];
 const XAI_MODELS = ['grok-3-fast'];
 
+// Friendly display names
+const MODEL_LABELS: Record<string, string> = {
+  'claude-opus-4-6-20250514': 'Opus 4.6',
+  'claude-sonnet-4-6-20250514': 'Sonnet 4.6',
+  'claude-sonnet-4-20250514': 'Sonnet 4',
+  'claude-haiku-4-5-20251001': 'Haiku 4.5',
+  'gpt-4o': 'GPT-4o',
+  'gpt-4o-mini': 'GPT-4o Mini',
+  'grok-3-fast': 'Grok 3 Fast',
+};
+
 const DEFAULT_SYSTEM_PROMPT =
   'You are Traces, an AI assistant embedded in a knowledge management app called Traces. You can read, write, edit, search, and delete files in the user\'s vault. Use tools to help the user manage their notes and knowledge base. Always be helpful and proactive.';
+
+// File-modifying tools that should trigger a refresh
+const FILE_MODIFYING_TOOLS = new Set(['write_file', 'edit_file', 'delete_file']);
 
 // ---------------------------------------------------------------------------
 // Tool color mapping
 // ---------------------------------------------------------------------------
-const TOOL_BORDER_COLORS: Record<string, string> = {
-  read_file: '#3b82f6',    // blue
-  write_file: '#22c55e',   // green
-  edit_file: '#f97316',    // orange
-  delete_file: '#ef4444',  // red
-  search_files: '#a855f7', // purple
-  list_files: '#6b7280',   // gray
+const TOOL_COLORS: Record<string, string> = {
+  read_file: '#3b82f6',
+  write_file: '#22c55e',
+  edit_file: '#f97316',
+  delete_file: '#ef4444',
+  search_files: '#a855f7',
+  list_files: '#6b7280',
 };
 
 function getToolColor(name: string): string {
-  return TOOL_BORDER_COLORS[name] ?? '#6b7280';
+  return TOOL_COLORS[name] ?? '#6b7280';
 }
 
 // ---------------------------------------------------------------------------
@@ -63,19 +79,18 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
 
   return (
     <div
-      className="rounded text-xs overflow-hidden"
+      className="rounded-lg text-xs overflow-hidden"
       style={{
-        borderLeft: `3px solid ${borderColor}`,
-        backgroundColor: 'var(--bg-secondary, #fafafa)',
-        border: `1px solid var(--border-subtle, #e4e4e7)`,
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
         borderLeftWidth: 3,
         borderLeftColor: borderColor,
       }}
     >
       <button
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex items-center justify-between w-full px-2 py-1.5 text-left cursor-pointer"
-        style={{ color: 'var(--text, #09090b)' }}
+        className="flex items-center justify-between w-full px-2.5 py-1.5 text-left cursor-pointer"
+        style={{ color: 'var(--text)' }}
       >
         <span className="flex items-center gap-1.5">
           <span
@@ -91,12 +106,17 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
           <span className="font-medium" style={{ fontFamily: 'monospace', fontSize: 11 }}>
             {toolCall.name}
           </span>
+          {toolCall.args.path && (
+            <span style={{ color: 'var(--text-dim)', fontFamily: 'monospace', fontSize: 10 }}>
+              {toolCall.args.path}
+            </span>
+          )}
         </span>
         <span
           style={{
             transition: 'transform 150ms',
             transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
-            color: 'var(--text-dim, #a1a1aa)',
+            color: 'var(--text-dim)',
             fontSize: 10,
           }}
         >
@@ -106,24 +126,20 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
 
       {expanded && (
         <div
-          className="px-2 pb-2 space-y-1.5"
-          style={{ borderTop: '1px solid var(--border-subtle, #e4e4e7)' }}
+          className="px-2.5 pb-2 space-y-1.5"
+          style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
         >
-          {/* Args */}
           {Object.keys(toolCall.args).length > 0 && (
             <div className="pt-1.5">
-              <div
-                className="text-[10px] uppercase tracking-wider mb-0.5 font-semibold"
-                style={{ color: 'var(--text-dim, #a1a1aa)' }}
-              >
+              <div className="text-[10px] uppercase tracking-wider mb-0.5 font-semibold" style={{ color: 'var(--text-dim)' }}>
                 Arguments
               </div>
               <pre
                 className="whitespace-pre-wrap text-[11px] leading-relaxed p-1.5 rounded"
                 style={{
                   fontFamily: 'monospace',
-                  backgroundColor: 'var(--bg, #fff)',
-                  color: 'var(--text, #09090b)',
+                  backgroundColor: 'rgba(255,255,255,0.02)',
+                  color: 'var(--text)',
                   margin: 0,
                 }}
               >
@@ -132,21 +148,17 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
             </div>
           )}
 
-          {/* Result */}
           {toolCall.result && (
             <div>
-              <div
-                className="text-[10px] uppercase tracking-wider mb-0.5 font-semibold"
-                style={{ color: 'var(--text-dim, #a1a1aa)' }}
-              >
+              <div className="text-[10px] uppercase tracking-wider mb-0.5 font-semibold" style={{ color: 'var(--text-dim)' }}>
                 Result
               </div>
               <pre
                 className="whitespace-pre-wrap text-[11px] leading-relaxed p-1.5 rounded"
                 style={{
                   fontFamily: 'monospace',
-                  backgroundColor: 'var(--bg, #fff)',
-                  color: 'var(--text, #09090b)',
+                  backgroundColor: 'rgba(255,255,255,0.02)',
+                  color: 'var(--text)',
                   margin: 0,
                   maxHeight: 200,
                   overflowY: 'auto',
@@ -167,6 +179,8 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
 // ---------------------------------------------------------------------------
 export function ChatPanel() {
   const { toggleChat } = useUIStore();
+  const { refreshFiles } = useVaultStore();
+  const { reloadTab } = useEditorStore();
 
   // Chat state
   const [messages, setMessages] = useState<Message[]>([]);
@@ -185,9 +199,7 @@ export function ChatPanel() {
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [ollamaRunning, setOllamaRunning] = useState(false);
 
-  // ------------------------------------------------------------------
   // Auto-detect Ollama models on mount
-  // ------------------------------------------------------------------
   useEffect(() => {
     let cancelled = false;
 
@@ -196,9 +208,7 @@ export function ChatPanel() {
         const res = await fetch('http://localhost:11434/api/tags');
         if (!res.ok) throw new Error('not ok');
         const data = await res.json();
-        const models: string[] = (data.models ?? []).map(
-          (m: OllamaModel) => m.name,
-        );
+        const models: string[] = (data.models ?? []).map((m: OllamaModel) => m.name);
         if (!cancelled) {
           setOllamaRunning(true);
           setOllamaModels(models);
@@ -206,36 +216,29 @@ export function ChatPanel() {
             setProvider('ollama');
             setModel(models[0]);
           } else {
-            setProvider('openai');
-            setModel(OPENAI_MODELS[0]);
+            setProvider('anthropic');
+            setModel(CLAUDE_MODELS[0]);
           }
         }
       } catch {
         if (!cancelled) {
           setOllamaRunning(false);
           setOllamaModels([]);
-          setProvider('openai');
-          setModel(OPENAI_MODELS[0]);
+          setProvider('anthropic');
+          setModel(CLAUDE_MODELS[0]);
         }
       }
     }
 
     detectOllama();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  // ------------------------------------------------------------------
   // Scroll to bottom on new messages
-  // ------------------------------------------------------------------
   useEffect(() => {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
   }, [messages]);
 
-  // ------------------------------------------------------------------
-  // Model selector change handler
-  // ------------------------------------------------------------------
   const handleModelChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const value = e.target.value;
@@ -246,9 +249,25 @@ export function ChatPanel() {
     [],
   );
 
-  // ------------------------------------------------------------------
+  // Refresh files and editor after AI modifies files
+  const handleFileRefresh = useCallback(
+    (toolCalls: ToolCall[]) => {
+      const hasFileChange = toolCalls.some((tc) => FILE_MODIFYING_TOOLS.has(tc.name));
+      if (hasFileChange) {
+        refreshFiles();
+        // Reload any tabs for files that were modified
+        const modifiedPaths = toolCalls
+          .filter((tc) => FILE_MODIFYING_TOOLS.has(tc.name) && tc.args.path)
+          .map((tc) => tc.args.path);
+        for (const p of modifiedPaths) {
+          reloadTab(p);
+        }
+      }
+    },
+    [refreshFiles, reloadTab],
+  );
+
   // Send message
-  // ------------------------------------------------------------------
   const handleSubmit = async () => {
     if (!input.trim() || loading) return;
 
@@ -272,10 +291,7 @@ export function ChatPanel() {
 
       if (res.status === 503) {
         const data = await res.json();
-        setError(
-          data.error ||
-            'API key not configured. Add the required key to .env.local',
-        );
+        setError(data.error || 'API key not configured. Add the required key to .env.local');
         setLoading(false);
         return;
       }
@@ -286,17 +302,20 @@ export function ChatPanel() {
       }
 
       const data = await res.json();
+      const toolCalls = data.toolCalls || [];
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
           content: data.message || 'No response',
-          toolCalls: data.toolCalls || [],
+          toolCalls,
         },
       ]);
+
+      // Refresh files if AI modified any
+      handleFileRefresh(toolCalls);
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : 'Failed to connect to AI service';
+      const msg = err instanceof Error ? err.message : 'Failed to connect to AI service';
       setError(msg);
     } finally {
       setLoading(false);
@@ -304,10 +323,7 @@ export function ChatPanel() {
   };
 
   const selectValue = `${provider}::${model}`;
-
-  const emptyStateText = ollamaRunning
-    ? 'Select a model above and start chatting.'
-    : 'Ollama is not running. You can still use OpenAI, Claude, or Grok (requires API keys in .env.local).';
+  const modelLabel = MODEL_LABELS[model] || model;
 
   const clearChat = useCallback(() => {
     setMessages([]);
@@ -315,7 +331,7 @@ export function ChatPanel() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full pt-10" style={{ backgroundColor: 'var(--bg, #fff)', color: 'var(--text, #09090b)' }}>
+    <div className="flex flex-col h-full pt-10" style={{ color: 'var(--text)' }}>
       {/* Typing indicator keyframes */}
       <style>{`
         @keyframes typingDot {
@@ -326,15 +342,13 @@ export function ChatPanel() {
 
       {/* Header */}
       <div
-        className="flex items-center justify-between px-3 py-2"
-        style={{ borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}
+        className="flex items-center justify-between px-4 py-2.5"
+        style={{ borderBottom: '1px solid var(--border)' }}
       >
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold" style={{ color: 'var(--text, #09090b)' }}>
-            AI Chat
-          </span>
-          <span className="text-xs" style={{ color: 'var(--text-secondary, #71717a)' }}>
-            {model || 'No model selected'}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>AI Chat</span>
+          <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}>
+            {modelLabel}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -342,19 +356,19 @@ export function ChatPanel() {
             <button
               onClick={clearChat}
               className="transition-colors text-xs"
-              style={{ color: 'var(--text-secondary, #71717a)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #09090b)')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary, #71717a)')}
+              style={{ color: 'var(--text-secondary)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
             >
-              Clear chat
+              Clear
             </button>
           )}
           <button
             onClick={toggleChat}
             className="transition-colors text-sm"
-            style={{ color: 'var(--text-dim, #a1a1aa)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #09090b)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-dim, #a1a1aa)')}
+            style={{ color: 'var(--text-dim)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-dim)')}
           >
             &times;
           </button>
@@ -363,16 +377,16 @@ export function ChatPanel() {
 
       {/* Model Selector */}
       <div
-        className="px-3 py-2 flex items-center gap-2"
-        style={{ borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}
+        className="px-4 py-2 flex items-center gap-2"
+        style={{ borderBottom: '1px solid var(--border)' }}
       >
         {ollamaRunning && (
           <span
             title="Ollama is running"
             style={{
               display: 'inline-block',
-              width: 8,
-              height: 8,
+              width: 7,
+              height: 7,
               borderRadius: '50%',
               backgroundColor: '#22c55e',
               flexShrink: 0,
@@ -383,25 +397,23 @@ export function ChatPanel() {
         <select
           value={selectValue}
           onChange={handleModelChange}
-          className="flex-1 text-sm rounded px-2 py-1.5 appearance-none cursor-pointer"
+          className="flex-1 text-xs rounded px-2 py-1.5 appearance-none cursor-pointer"
           style={{
-            backgroundColor: 'var(--bg, #fff)',
-            border: '1px solid var(--border-subtle, #e4e4e7)',
-            color: 'var(--text, #09090b)',
+            backgroundColor: 'rgba(255,255,255,0.04)',
+            border: '1px solid var(--border)',
+            color: 'var(--text)',
             outline: 'none',
             backgroundImage:
-              'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%2371717a\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
+              'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23a1a1aa\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'right 8px center',
             paddingRight: 28,
           }}
           onFocus={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.08)';
-            e.currentTarget.style.borderColor = 'var(--border, #27272a)';
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
           }}
           onBlur={(e) => {
-            e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = 'var(--border-subtle, #e4e4e7)';
+            e.currentTarget.style.borderColor = 'var(--border)';
           }}
         >
           {ollamaModels.length > 0 && (
@@ -414,18 +426,18 @@ export function ChatPanel() {
             </optgroup>
           )}
 
-          <optgroup label="OpenAI">
-            {OPENAI_MODELS.map((m) => (
-              <option key={`openai::${m}`} value={`openai::${m}`}>
-                {m}
+          <optgroup label="Claude">
+            {CLAUDE_MODELS.map((m) => (
+              <option key={`anthropic::${m}`} value={`anthropic::${m}`}>
+                {MODEL_LABELS[m] || m}
               </option>
             ))}
           </optgroup>
 
-          <optgroup label="Claude">
-            {CLAUDE_MODELS.map((m) => (
-              <option key={`anthropic::${m}`} value={`anthropic::${m}`}>
-                {m}
+          <optgroup label="OpenAI">
+            {OPENAI_MODELS.map((m) => (
+              <option key={`openai::${m}`} value={`openai::${m}`}>
+                {MODEL_LABELS[m] || m}
               </option>
             ))}
           </optgroup>
@@ -433,7 +445,7 @@ export function ChatPanel() {
           <optgroup label="xAI Grok">
             {XAI_MODELS.map((m) => (
               <option key={`xai::${m}`} value={`xai::${m}`}>
-                {m}
+                {MODEL_LABELS[m] || m}
               </option>
             ))}
           </optgroup>
@@ -441,11 +453,11 @@ export function ChatPanel() {
       </div>
 
       {/* System Prompt (collapsible) */}
-      <div style={{ borderBottom: '1px solid var(--border-subtle, #e4e4e7)' }}>
+      <div style={{ borderBottom: '1px solid var(--border)' }}>
         <button
           onClick={() => setShowSystemPrompt((prev) => !prev)}
-          className="flex items-center gap-1.5 px-3 py-1.5 w-full text-left text-xs"
-          style={{ color: 'var(--text-secondary, #71717a)' }}
+          className="flex items-center gap-1.5 px-4 py-1.5 w-full text-left text-xs"
+          style={{ color: 'var(--text-secondary)' }}
         >
           <span
             style={{
@@ -460,25 +472,23 @@ export function ChatPanel() {
           System Prompt
         </button>
         {showSystemPrompt && (
-          <div className="px-3 pb-2">
+          <div className="px-4 pb-2">
             <textarea
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               rows={4}
               className="w-full text-xs rounded p-2 resize-y focus:outline-none"
               style={{
-                backgroundColor: 'var(--bg-secondary, #fafafa)',
-                border: '1px solid var(--border-subtle, #e4e4e7)',
-                color: 'var(--text, #09090b)',
+                backgroundColor: 'rgba(255,255,255,0.03)',
+                border: '1px solid var(--border)',
+                color: 'var(--text)',
                 fontFamily: 'monospace',
               }}
               onFocus={(e) => {
-                e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.08)';
-                e.currentTarget.style.borderColor = 'var(--border, #27272a)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
               }}
               onBlur={(e) => {
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = 'var(--border-subtle, #e4e4e7)';
+                e.currentTarget.style.borderColor = 'var(--border)';
               }}
             />
           </div>
@@ -486,80 +496,87 @@ export function ChatPanel() {
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-sm text-center mt-8">
-            <p className="mb-2" style={{ color: 'var(--text-secondary, #71717a)' }}>
-              Traces AI Assistant
-            </p>
-            <p style={{ color: 'var(--text-dim, #a1a1aa)', maxWidth: 260, margin: '0 auto' }}>
-              {emptyStateText}
+          <div className="text-center mt-12">
+            <div className="text-lg font-semibold mb-2" style={{ color: 'var(--text)' }}>
+              Traces AI
+            </div>
+            <p className="text-xs" style={{ color: 'var(--text-dim)', maxWidth: 260, margin: '0 auto' }}>
+              {ollamaRunning
+                ? 'Select a model and start chatting. I can read, write, and manage your notes.'
+                : 'Ollama is not running. Use Claude, OpenAI, or Grok (requires API keys in .env.local).'}
             </p>
           </div>
         )}
 
         {messages.map((msg, i) => (
-          <div
-            key={i}
-            className="text-sm leading-relaxed rounded p-2"
-            style={
-              msg.role === 'user'
-                ? {
-                    color: 'var(--text, #09090b)',
-                    backgroundColor: 'var(--bg, #fff)',
-                    border: '1px solid var(--border-subtle, #e4e4e7)',
-                  }
-                : {
-                    color: 'var(--text, #09090b)',
-                    borderLeft: '3px solid var(--text, #09090b)',
-                    backgroundColor: 'var(--bg-secondary, #fafafa)',
-                  }
-            }
-          >
-            {/* Tool calls rendered before text content */}
-            {msg.toolCalls && msg.toolCalls.length > 0 && (
-              <div className="space-y-1 mb-2">
-                {msg.toolCalls.map((tc, j) => (
-                  <ToolCallCard key={j} toolCall={tc} />
-                ))}
-              </div>
-            )}
-
-            <pre
-              className="whitespace-pre-wrap font-sans text-sm leading-relaxed"
-              style={{ margin: 0 }}
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div
+              className="text-sm leading-relaxed rounded-2xl max-w-[85%]"
+              style={
+                msg.role === 'user'
+                  ? {
+                      color: '#fff',
+                      background: 'linear-gradient(135deg, rgba(35,131,226,0.4), rgba(155,89,182,0.4))',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      padding: '8px 14px',
+                    }
+                  : {
+                      color: 'var(--text)',
+                      backgroundColor: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      padding: '10px 14px',
+                    }
+              }
             >
-              {msg.content}
-            </pre>
+              {/* Tool calls rendered before text content */}
+              {msg.toolCalls && msg.toolCalls.length > 0 && (
+                <div className="space-y-1 mb-2">
+                  {msg.toolCalls.map((tc, j) => (
+                    <ToolCallCard key={j} toolCall={tc} />
+                  ))}
+                </div>
+              )}
+
+              <pre
+                className="whitespace-pre-wrap font-sans text-sm leading-relaxed"
+                style={{ margin: 0 }}
+              >
+                {msg.content}
+              </pre>
+            </div>
           </div>
         ))}
 
         {loading && (
-          <div className="flex items-center gap-1 py-1">
-            {[0, 1, 2].map((i) => (
-              <span
-                key={i}
-                style={{
-                  display: 'inline-block',
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--text-dim, #a1a1aa)',
-                  animation: 'typingDot 1.4s infinite',
-                  animationDelay: `${i * 0.2}s`,
-                }}
-              />
-            ))}
+          <div className="flex justify-start">
+            <div className="flex items-center gap-1 py-2 px-3 rounded-2xl" style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}>
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  style={{
+                    display: 'inline-block',
+                    width: 6,
+                    height: 6,
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--text-dim)',
+                    animation: 'typingDot 1.4s infinite',
+                    animationDelay: `${i * 0.2}s`,
+                  }}
+                />
+              ))}
+            </div>
           </div>
         )}
 
         {error && (
           <div
-            className="text-xs p-2 rounded"
+            className="text-xs p-3 rounded-lg"
             style={{
               color: '#ef4444',
-              backgroundColor: 'rgba(239,68,68,0.04)',
-              border: '1px solid rgba(239,68,68,0.15)',
+              backgroundColor: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)',
             }}
           >
             {error}
@@ -567,46 +584,40 @@ export function ChatPanel() {
         )}
       </div>
 
-      {/* Input */}
-      <div className="p-3" style={{ borderTop: '1px solid var(--border-subtle, #e4e4e7)' }}>
-        <div className="flex gap-2">
+      {/* Input area */}
+      <div className="px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
+        <div className="flex gap-2 items-end">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
             placeholder="Ask Traces..."
-            className="flex-1 px-3 py-2 text-sm rounded placeholder:text-gray-400 focus:outline-none"
+            className="flex-1 px-4 py-2.5 text-sm rounded-xl placeholder:text-gray-500 focus:outline-none"
             style={{
-              backgroundColor: 'var(--bg, #fff)',
-              border: '1px solid var(--border-subtle, #e4e4e7)',
-              color: 'var(--text, #09090b)',
+              backgroundColor: 'rgba(255,255,255,0.04)',
+              border: '1px solid var(--border)',
+              color: 'var(--text)',
             }}
             onFocus={(e) => {
-              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.08)';
-              e.currentTarget.style.borderColor = 'var(--border, #27272a)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.boxShadow = '0 0 0 2px rgba(35,131,226,0.15)';
             }}
             onBlur={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
               e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = 'var(--border-subtle, #e4e4e7)';
             }}
           />
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="px-3 py-2 text-sm transition-colors disabled:opacity-50"
+            className="px-4 py-2.5 text-sm rounded-xl transition-all disabled:opacity-50"
             style={{
-              backgroundColor: 'var(--accent, #18181b)',
-              color: 'var(--accent-fg, #fff)',
-              borderRadius: 6,
+              background: 'linear-gradient(135deg, rgba(35,131,226,0.5), rgba(155,89,182,0.5))',
+              color: '#fff',
               fontWeight: 500,
+              border: '1px solid rgba(255,255,255,0.1)',
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.opacity = '0.9')
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.opacity = '1')
-            }
           >
             Send
           </button>

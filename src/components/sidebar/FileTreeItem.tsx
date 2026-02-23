@@ -63,11 +63,11 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
           fontWeight: node.isFile ? 400 : 600,
           borderRadius: '4px',
           margin: '0 4px',
-          backgroundColor: isActive ? 'var(--bg-secondary, #fafafa)' : undefined,
-          color: 'var(--text, #09090b)',
+          backgroundColor: isActive ? 'rgba(255,255,255,0.06)' : undefined,
+          color: 'var(--text)',
         }}
         onMouseEnter={(e) => {
-          if (!isActive) e.currentTarget.style.backgroundColor = 'var(--bg-secondary, #fafafa)';
+          if (!isActive) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)';
         }}
         onMouseLeave={(e) => {
           if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
@@ -82,7 +82,7 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
             style={{ width: '7px', height: '7px', backgroundColor: dotColor }}
           />
         ) : (
-          <span className="flex-shrink-0 w-3 text-center" style={{ color: 'var(--text-dim, #a1a1aa)', fontSize: '11px' }}>
+          <span className="flex-shrink-0 w-3 text-center" style={{ color: 'var(--text-dim)', fontSize: '11px' }}>
             {expanded ? '\u25BE' : '\u25B8'}
           </span>
         )}
@@ -120,17 +120,18 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
             style={{
               left: contextMenu.x,
               top: contextMenu.y,
-              backgroundColor: 'var(--bg, #fff)',
-              border: '1px solid var(--border-subtle, #e4e4e7)',
-              boxShadow: '0 1px 6px rgba(0,0,0,0.09), 0 2px 12px rgba(0,0,0,0.05)',
+              backgroundColor: 'rgba(10, 10, 20, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
             }}
           >
             {node.isFile && (
               <>
                 <button
-                  className="w-full px-3 py-1.5 text-xs text-left"
-                  style={{ color: 'var(--text, #09090b)' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-secondary, #fafafa)')}
+                  className="w-full px-3 py-1.5 text-xs text-left transition-colors"
+                  style={{ color: 'var(--text)' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   onClick={() => {
                     navigator.clipboard.writeText(node.path);
@@ -140,9 +141,9 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
                   Copy Path
                 </button>
                 <button
-                  className="w-full px-3 py-1.5 text-xs text-left"
+                  className="w-full px-3 py-1.5 text-xs text-left transition-colors"
                   style={{ color: '#ef4444' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-secondary, #fafafa)')}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                   onClick={() => {
                     onDelete(node.path);
