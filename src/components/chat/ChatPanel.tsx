@@ -6,7 +6,7 @@ import { useVaultStore } from '@/stores/vault-store';
 import { useEditorStore } from '@/stores/editor-store';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import { Send, ChevronLeft, Eraser } from 'lucide-react';
+import { Send, ChevronLeft, ChevronRight, Eraser } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -178,12 +178,12 @@ export function ChatPanel() {
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // System prompt — includes current model info
-  const systemPrompt = buildSystemPrompt(provider, model);
-
   // Model state
   const [provider, setProvider] = useState<Provider>('ollama');
   const [model, setModel] = useState('');
+
+  // System prompt — includes current model info
+  const systemPrompt = buildSystemPrompt(provider, model);
   const [ollamaModels, setOllamaModels] = useState<string[]>([]);
   const [ollamaRunning, setOllamaRunning] = useState(false);
 
