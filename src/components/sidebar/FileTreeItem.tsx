@@ -60,7 +60,7 @@ export function FileTreeItem({ node, depth, activeFile, onSelect, onDelete }: Fi
         style={{
           paddingLeft: `${depth * 18 + 12}px`,
           fontSize: '14px',
-          fontWeight: 400,
+          fontWeight: node.isFile ? 400 : 600,
           borderRadius: '4px',
           margin: '0 4px',
           backgroundColor: isActive ? 'rgba(35,131,226,0.08)' : undefined,

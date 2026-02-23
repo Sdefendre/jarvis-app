@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useVaultStore } from '@/stores/vault-store';
 import { useEditorStore } from '@/stores/editor-store';
+import { useUIStore } from '@/stores/ui-store';
 import { FileTreeItem, TreeNode } from './FileTreeItem';
 import { electronAPI } from '@/lib/electron-api';
 
@@ -51,6 +52,7 @@ function buildTree(files: string[]): TreeNode[] {
 export function FileTree() {
   const { files, activeFile, setActiveFile, refreshFiles, openFolder, vaultName } = useVaultStore();
   const { openFile } = useEditorStore();
+  const { chatOpen, toggleChat, darkMode, toggleDarkMode } = useUIStore();
   const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
   const [newFileName, setNewFileName] = useState('');
@@ -93,9 +95,9 @@ export function FileTree() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-4 py-2" style={{ paddingTop: '40px', borderBottom: '1px solid #e8e8e8' }}>
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-base font-semibold truncate" style={{ color: '#37352f' }}>
+      <div className="px-3 py-2" style={{ paddingTop: '40px', borderBottom: '1px solid #e0e0e0' }}>
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-bold truncate" style={{ color: 'var(--text, #111)' }}>
             {vaultName}
           </span>
           <div className="flex items-center gap-1 shrink-0">
@@ -140,21 +142,21 @@ export function FileTree() {
           placeholder="Search files..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded
+          className="w-full px-2.5 py-1.5 text-sm rounded
                      placeholder:text-gray-400
-                     focus:outline-none focus:ring-2"
+                     focus:outline-none"
           style={{
-            backgroundColor: '#f7f7f8',
-            border: '1px solid #e8e8e8',
-            color: '#37352f',
+            backgroundColor: '#f5f5f5',
+            border: '1px solid #e0e0e0',
+            color: '#111',
           }}
           onFocus={(e) => {
-            e.currentTarget.style.boxShadow = '0 0 0 2px rgba(35,131,226,0.25)';
-            e.currentTarget.style.borderColor = '#2383e2';
+            e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.1)';
+            e.currentTarget.style.borderColor = '#999';
           }}
           onBlur={(e) => {
             e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = '#e8e8e8';
+            e.currentTarget.style.borderColor = '#e0e0e0';
           }}
         />
       </div>
@@ -204,9 +206,79 @@ export function FileTree() {
         ))}
       </div>
 
-      {/* File count */}
-      <div className="px-4 py-2 text-sm" style={{ borderTop: '1px solid #e8e8e8', color: '#b0afa9' }}>
-        {files.length} notes
+      {/* Bottom bar: Dark mode + AI Chat + file count */}
+      <div className="px-3 py-3 space-y-2" style={{ borderTop: '1px solid var(--border, #e0e0e0)' }}>
+        {/* Dark mode toggle */}
+        <button
+          onClick={toggleDarkMode}
+          style={{
+            width: '100%',
+            padding: '6px 12px',
+            borderRadius: 8,
+            border: '1px solid var(--border, #e0e0e0)',
+            background: 'var(--bg-secondary, #f5f5f5)',
+            color: 'var(--text, #111)',
+            fontSize: 12,
+            fontWeight: 500,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--border, #e0e0e0)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--bg-secondary, #f5f5f5)';
+          }}
+        >
+          {darkMode ? '☀️' : '🌙'} {darkMode ? 'Light Mode' : 'Dark Mode'}
+        </button>
+
+        {/* AI Chat button */}
+        <button
+          onClick={toggleChat}
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            borderRadius: 10,
+            border: 'none',
+            background: chatOpen
+              ? 'linear-gradient(135deg, #6366f1, #a855f7, #ec4899)'
+              : 'linear-gradient(135deg, #4a90f7, #a855f7, #f97316)',
+            color: '#fff',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            boxShadow: chatOpen
+              ? '0 0 16px rgba(168, 85, 247, 0.4), 0 2px 8px rgba(99, 102, 241, 0.3)'
+              : '0 2px 10px rgba(74, 144, 247, 0.25)',
+            transition: 'box-shadow 0.3s, transform 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = '0 0 20px rgba(168, 85, 247, 0.5), 0 4px 14px rgba(74, 144, 247, 0.35)';
+            e.currentTarget.style.transform = 'scale(1.02)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = chatOpen
+              ? '0 0 16px rgba(168, 85, 247, 0.4), 0 2px 8px rgba(99, 102, 241, 0.3)'
+              : '0 2px 10px rgba(74, 144, 247, 0.25)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          <span style={{ fontSize: 15 }}>&#10024;</span>
+          {chatOpen ? 'Close AI Chat' : 'AI Chat'}
+        </button>
+
+        <div className="text-xs text-center" style={{ color: 'var(--text-dim, #bbb)' }}>
+          {files.length} notes
+        </div>
       </div>
     </div>
   );

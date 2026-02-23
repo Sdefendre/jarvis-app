@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useVaultStore } from '@/stores/vault-store';
 import { useUIStore } from '@/stores/ui-store';
 import { electronAPI } from '@/lib/electron-api';
@@ -21,7 +21,12 @@ export function AppShell() {
     toggleGraphFullscreen,
     toggleGraphCollapsed,
   } = useUIStore();
-  const dividerRef = useRef<HTMLDivElement>(null);
+  const editorDividerRef = useRef<HTMLDivElement>(null);
+  const sidebarDividerRef = useRef<HTMLDivElement>(null);
+  const [editorDividerHover, setEditorDividerHover] = useState(false);
+  const [sidebarDividerHover, setSidebarDividerHover] = useState(false);
+  const [editorDragging, setEditorDragging] = useState(false);
+  const [sidebarDragging, setSidebarDragging] = useState(false);
 
   useEffect(() => {
     loadVault();
@@ -43,15 +48,18 @@ export function AppShell() {
     };
   }, [refreshFiles, setGraphData]);
 
-  // Resizable editor divider
-  const handleDividerDrag = useCallback((e: React.MouseEvent) => {
+  // Resizable editor divider — works bidirectionally
+  const handleEditorDividerDrag = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
     const startWidth = useUIStore.getState().editorWidth;
+    const maxWidth = Math.floor(window.innerWidth * 0.8);
+
+    setEditorDragging(true);
 
     const onMouseMove = (e: MouseEvent) => {
       const delta = startX - e.clientX;
-      const newWidth = Math.max(300, Math.min(900, startWidth + delta));
+      const newWidth = Math.max(300, Math.min(maxWidth, startWidth + delta));
       useUIStore.getState().setEditorWidth(newWidth);
     };
 
@@ -60,6 +68,35 @@ export function AppShell() {
       document.removeEventListener('mouseup', onMouseUp);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      setEditorDragging(false);
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, []);
+
+  // Resizable sidebar divider
+  const handleSidebarDividerDrag = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = useUIStore.getState().sidebarWidth;
+
+    setSidebarDragging(true);
+
+    const onMouseMove = (e: MouseEvent) => {
+      const delta = e.clientX - startX;
+      const newWidth = Math.max(180, Math.min(400, startWidth + delta));
+      useUIStore.getState().setSidebarWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      setSidebarDragging(false);
     };
 
     document.body.style.cursor = 'col-resize';
@@ -70,12 +107,12 @@ export function AppShell() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-void">
+      <div className="flex items-center justify-center h-screen" style={{ backgroundColor: '#ffffff' }}>
         <div className="text-center">
-          <div className="text-neon-cyan text-2xl glow-cyan animate-pulse-glow mb-4">
+          <div className="text-2xl font-semibold mb-4" style={{ color: '#2383e2' }}>
             JARVIS
           </div>
-          <div className="text-text-dim text-sm">Initializing neural network...</div>
+          <div className="text-sm" style={{ color: '#787774' }}>Initializing neural network...</div>
         </div>
       </div>
     );
@@ -113,10 +150,29 @@ export function AppShell() {
 
       {/* Sidebar */}
       <div
-        className="flex-shrink-0 border-r border-border bg-surface/50 overflow-hidden pt-8"
+        className="flex-shrink-0 border-r border-border bg-surface/50 overflow-hidden"
         style={{ width: sidebarWidth }}
       >
         <FileTree />
+      </div>
+
+      {/* Sidebar resize divider */}
+      <div
+        ref={sidebarDividerRef}
+        onMouseDown={handleSidebarDividerDrag}
+        onMouseEnter={() => setSidebarDividerHover(true)}
+        onMouseLeave={() => setSidebarDividerHover(false)}
+        className="flex-shrink-0 cursor-col-resize transition-colors relative"
+        style={{
+          width: 4,
+          backgroundColor:
+            sidebarDragging || sidebarDividerHover
+              ? '#2383e2'
+              : 'var(--color-border, #e5e7eb)',
+        }}
+      >
+        {/* Invisible wider hit area */}
+        <div className="absolute inset-y-0 -left-2 -right-2" />
       </div>
 
       {/* Graph */}
@@ -153,32 +209,71 @@ export function AppShell() {
         )}
       </div>
 
-      {/* Restore button when collapsed */}
+      {/* Colorful expand button when graph is collapsed */}
       {graphCollapsed && (
-        <div className="flex-shrink-0 flex items-start pt-10">
+        <div className="flex-shrink-0 flex flex-col items-center pt-10 px-1">
           <button
             onClick={toggleGraphCollapsed}
-            className="mx-1 flex h-6 w-6 items-center justify-center rounded-lg border border-gray-200 bg-white text-sm text-gray-400 hover:text-gray-800 shadow-sm transition-colors"
             title="Expand graph"
+            style={{
+              background: 'linear-gradient(135deg, #2383e2, #9b59b6)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 16,
+              padding: '6px 14px',
+              minHeight: 32,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(35, 131, 226, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              whiteSpace: 'nowrap',
+              transition: 'box-shadow 0.2s, transform 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = '0 4px 14px rgba(35, 131, 226, 0.45)';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(35, 131, 226, 0.3)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
-            □
+            <span style={{ fontSize: 15 }}>◧</span>
+            Graph
           </button>
         </div>
       )}
 
-      {/* Resizable Divider */}
-      {!graphCollapsed && (
-        <div
-          ref={dividerRef}
-          className="flex-shrink-0 w-1 bg-border hover:bg-neon-cyan/30 cursor-col-resize transition-colors"
-          onMouseDown={handleDividerDrag}
-        />
-      )}
+      {/* Editor resize divider — always visible */}
+      <div
+        ref={editorDividerRef}
+        onMouseDown={handleEditorDividerDrag}
+        onMouseEnter={() => setEditorDividerHover(true)}
+        onMouseLeave={() => setEditorDividerHover(false)}
+        className="flex-shrink-0 cursor-col-resize transition-colors relative"
+        style={{
+          width: 4,
+          backgroundColor:
+            editorDragging || editorDividerHover
+              ? '#2383e2'
+              : 'var(--color-border, #e5e7eb)',
+        }}
+      >
+        {/* Invisible wider hit area */}
+        <div className="absolute inset-y-0 -left-2 -right-2" />
+      </div>
 
       {/* Editor */}
       <div
-        className="flex-shrink-0 border-l border-border bg-void overflow-hidden transition-all duration-300 ease-in-out"
-        style={{ width: editorWidth, flex: graphCollapsed ? '1 1 0%' : undefined }}
+        className="border-l border-border overflow-hidden transition-all duration-300 ease-in-out"
+        style={{
+          ...(graphCollapsed
+            ? { flex: '1 1 0%' }
+            : { width: editorWidth, flexShrink: 0 }),
+        }}
       >
         <EditorPanel />
       </div>
