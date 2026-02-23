@@ -1,24 +1,28 @@
 // @ts-nocheck — R3F JSX intrinsics not typed with React 19
 'use client';
 
+import { useMemo } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
-import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { GraphScene } from './GraphScene';
 import { BackgroundField } from './BackgroundField';
+import * as THREE from 'three';
 
 export function KnowledgeGraph() {
+  const bgColor = useMemo(() => new THREE.Color('#f7f7f8'), []);
+
   return (
     <div className="w-full h-full">
       <Canvas
         camera={{ position: [0, 0, 180], fov: 60, near: 0.1, far: 1000 }}
         gl={{ antialias: true, alpha: false }}
-        style={{ background: '#f7f7f8' }}
+        scene={{ background: bgColor }}
       >
-        {/* Lighting — bright and warm for light theme */}
-        <ambientLight intensity={0.6} />
-        <pointLight position={[50, 50, 50]} color="#fff5e6" intensity={0.5} />
-        <pointLight position={[-40, -30, 40]} color="#ffe8cc" intensity={0.3} />
+        {/* Bright lighting for white theme */}
+        <ambientLight intensity={1.2} />
+        <pointLight position={[80, 80, 80]} color="#ffffff" intensity={0.8} />
+        <pointLight position={[-60, -40, 60]} color="#ffffff" intensity={0.4} />
 
         {/* Subtle ambient particles */}
         <BackgroundField />
@@ -39,15 +43,14 @@ export function KnowledgeGraph() {
         {/* Graph content */}
         <GraphScene />
 
-        {/* Post-processing */}
+        {/* Bloom post-processing for glow effect */}
         <EffectComposer>
           <Bloom
-            luminanceThreshold={0.4}
+            luminanceThreshold={0.2}
             luminanceSmoothing={0.9}
-            intensity={0.15}
+            intensity={0.6}
             mipmapBlur
           />
-          <Vignette offset={0.3} darkness={0.2} />
         </EffectComposer>
       </Canvas>
     </div>

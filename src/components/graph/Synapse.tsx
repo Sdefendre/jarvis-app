@@ -4,9 +4,7 @@
 import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import type { GraphEdge, NodeCategory } from '@/types';
-import { CATEGORY_COLORS } from '@/types';
-import { useGraphStore } from '@/stores/graph-store';
+import type { GraphEdge } from '@/types';
 
 interface SynapseProps {
   edge: GraphEdge;
@@ -16,107 +14,54 @@ interface SynapseProps {
   highlighted: boolean;
 }
 
+// Reusable vectors to avoid allocations per frame
+const _start = new THREE.Vector3();
+const _end = new THREE.Vector3();
+const _mid = new THREE.Vector3();
+const _dir = new THREE.Vector3();
+const _up = new THREE.Vector3(0, 1, 0);
+const _quat = new THREE.Quaternion();
+
 export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighted }: SynapseProps) {
-  const lineRef = useRef<THREE.Line>(null);
-  const particlesRef = useRef<THREE.Points>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
 
-  // Use the source node's category color instead of a constant
-  const lineColor = CATEGORY_COLORS[sourceCategory as NodeCategory] || CATEGORY_COLORS.archive;
-  const edgeColor = useMemo(() => new THREE.Color(lineColor), [lineColor]);
+  // Thickness based on edge type
+  const radius = edge.type === 'wiki-link' ? 0.18 : edge.type === 'folder-sibling' ? 0.12 : 0.08;
 
-  // Reduced particle counts — subtle, not dominant
-  const particleCount = edge.type === 'wiki-link' ? 4 : edge.type === 'folder-sibling' ? 2 : 1;
+  useFrame(() => {
+    if (!meshRef.current) return;
 
-  // Particle positions along the curve
-  const particlePositions = useMemo(() => {
-    return new Float32Array(particleCount * 3);
-  }, [particleCount]);
+    _start.set(sourcePos[0], sourcePos[1], sourcePos[2]);
+    _end.set(targetPos[0], targetPos[1], targetPos[2]);
 
-  useFrame(({ clock }) => {
-    if (!lineRef.current) return;
+    // Position at midpoint
+    _mid.copy(_start).add(_end).multiplyScalar(0.5);
+    meshRef.current.position.copy(_mid);
 
-    const t = clock.getElapsedTime();
+    // Scale Y to the distance
+    const dist = _start.distanceTo(_end);
+    meshRef.current.scale.set(1, dist, 1);
 
-    // Update line geometry between current positions
-    const positions = lineRef.current.geometry.attributes.position;
-    if (positions) {
-      // Midpoint with slight curve
-      const midX = (sourcePos[0] + targetPos[0]) / 2;
-      const midY = (sourcePos[1] + targetPos[1]) / 2 + 3;
-      const midZ = (sourcePos[2] + targetPos[2]) / 2;
+    // Rotate to align with direction
+    _dir.copy(_end).sub(_start).normalize();
+    _quat.setFromUnitVectors(_up, _dir);
+    meshRef.current.quaternion.copy(_quat);
 
-      const arr = positions.array as Float32Array;
-      arr[0] = sourcePos[0]; arr[1] = sourcePos[1]; arr[2] = sourcePos[2];
-      arr[3] = midX; arr[4] = midY; arr[5] = midZ;
-      arr[6] = targetPos[0]; arr[7] = targetPos[1]; arr[8] = targetPos[2];
-      positions.needsUpdate = true;
-    }
-
-    // Low opacity lines — visible but not dominant
-    const mat = lineRef.current.material as THREE.LineBasicMaterial;
-    const targetOpacity = highlighted ? 0.35 : 0.08;
+    // Opacity
+    const mat = meshRef.current.material as THREE.MeshBasicMaterial;
+    const targetOpacity = highlighted ? 0.7 : 0.35;
     mat.opacity += (targetOpacity - mat.opacity) * 0.1;
-
-    // Animate particles flowing along the curve — slow and subtle
-    if (particlesRef.current) {
-      const pPositions = particlesRef.current.geometry.attributes.position;
-      if (pPositions) {
-        const arr = pPositions.array as Float32Array;
-        for (let i = 0; i < particleCount; i++) {
-          const phase = (t * 0.3 + i / particleCount) % 1;
-          // Quadratic bezier interpolation
-          const midX = (sourcePos[0] + targetPos[0]) / 2;
-          const midY = (sourcePos[1] + targetPos[1]) / 2 + 3;
-          const midZ = (sourcePos[2] + targetPos[2]) / 2;
-
-          const t1 = 1 - phase;
-          arr[i * 3] = t1 * t1 * sourcePos[0] + 2 * t1 * phase * midX + phase * phase * targetPos[0];
-          arr[i * 3 + 1] = t1 * t1 * sourcePos[1] + 2 * t1 * phase * midY + phase * phase * targetPos[1];
-          arr[i * 3 + 2] = t1 * t1 * sourcePos[2] + 2 * t1 * phase * midZ + phase * phase * targetPos[2];
-        }
-        pPositions.needsUpdate = true;
-      }
-
-      const pMat = particlesRef.current.material as THREE.PointsMaterial;
-      pMat.opacity = highlighted ? 0.4 : 0.15;
-    }
   });
 
   return (
-    <>
-      {/* Thin subtle connection line — source category color */}
-      <line ref={lineRef as React.RefObject<THREE.Line>}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[new Float32Array(9), 3]}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial
-          color={edgeColor}
-          transparent
-          opacity={0.08}
-          linewidth={1}
-        />
-      </line>
-
-      {/* Subtle flowing particles */}
-      <points ref={particlesRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[particlePositions, 3]}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          color={edgeColor}
-          size={0.2}
-          transparent
-          opacity={0.15}
-          sizeAttenuation
-          depthWrite={false}
-        />
-      </points>
-    </>
+    <mesh ref={meshRef}>
+      <cylinderGeometry args={[radius, radius, 1, 6, 1]} />
+      <meshBasicMaterial
+        color="#37352f"
+        transparent
+        opacity={0.35}
+        depthWrite={false}
+      />
+    </mesh>
   );
 }

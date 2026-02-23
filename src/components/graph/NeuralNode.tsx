@@ -18,6 +18,7 @@ interface NeuralNodeProps {
 
 export function NeuralNode({ node, position, isConnected, onSelect }: NeuralNodeProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   const { hoveredNode, setHoveredNode } = useGraphStore();
 
@@ -26,32 +27,38 @@ export function NeuralNode({ node, position, isConnected, onSelect }: NeuralNode
 
   const isHighlighted = hoveredNode === node.id || isConnected;
 
-  // Emissive targets: subtle base, brighter on highlight/hover
-  const baseEmissive = isHighlighted ? 0.4 : 0.2;
-  const targetEmissive = hovered ? 0.6 : baseEmissive;
-
-  // Scale targets: gentle hover bump
-  const targetScale = hovered ? 1.3 : 1;
+  // Scale targets
+  const targetScale = hovered ? 1.4 : isHighlighted ? 1.15 : 1;
 
   useFrame(() => {
     if (!meshRef.current) return;
 
-    // Smooth scale transition via lerp
+    // Smooth scale transition
     const currentScale = meshRef.current.scale.x;
     const newScale = currentScale + (targetScale - currentScale) * 0.12;
     meshRef.current.scale.setScalar(newScale);
 
-    // Smooth emissive intensity transition
+    // Emissive intensity — strong glow
     const mat = meshRef.current.material as THREE.MeshStandardMaterial;
+    const targetEmissive = hovered ? 1.8 : isHighlighted ? 1.2 : 0.8;
     mat.emissiveIntensity += (targetEmissive - mat.emissiveIntensity) * 0.1;
 
     // Position update
     meshRef.current.position.set(...position);
+
+    // Outer glow shell
+    if (glowRef.current) {
+      glowRef.current.position.set(...position);
+      glowRef.current.scale.setScalar(newScale);
+      const glowMat = glowRef.current.material as THREE.MeshStandardMaterial;
+      const targetGlowOpacity = hovered ? 0.25 : isHighlighted ? 0.15 : 0.08;
+      glowMat.opacity += (targetGlowOpacity - glowMat.opacity) * 0.1;
+    }
   });
 
   return (
     <>
-      {/* Clean sphere node */}
+      {/* Core sphere — colorful and vibrant */}
       <mesh
         ref={meshRef}
         position={position}
@@ -71,39 +78,50 @@ export function NeuralNode({ node, position, isConnected, onSelect }: NeuralNode
           onSelect(node);
         }}
       >
-        <sphereGeometry args={[0.8, 32, 32]} />
+        <sphereGeometry args={[2.2, 32, 32]} />
         <meshStandardMaterial
           color={catColor}
           emissive={catColor}
-          emissiveIntensity={0.2}
-          roughness={0.6}
+          emissiveIntensity={0.8}
+          roughness={0.3}
           metalness={0.1}
         />
       </mesh>
 
-      {/* Label on hover — clean sans-serif pill */}
-      {hovered && (
-        <Html position={position} center style={{ pointerEvents: 'none' }}>
-          <div
-            style={{
-              background: 'rgba(30, 30, 30, 0.92)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: '6px',
-              padding: '3px 10px',
-              color: '#ffffffde',
-              fontFamily:
-                '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-              fontSize: '11px',
-              fontWeight: 500,
-              letterSpacing: '0.01em',
-              whiteSpace: 'nowrap',
-              transform: 'translateY(-24px)',
-            }}
-          >
-            {node.label}
-          </div>
-        </Html>
-      )}
+      {/* Outer glow shell — larger transparent sphere for bloom to pick up */}
+      <mesh ref={glowRef} position={position}>
+        <sphereGeometry args={[3.5, 24, 24]} />
+        <meshStandardMaterial
+          color={catColor}
+          emissive={catColor}
+          emissiveIntensity={1.5}
+          transparent
+          opacity={0.08}
+          roughness={1}
+          metalness={0}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Always-visible label */}
+      <Html position={position} center style={{ pointerEvents: 'none' }}>
+        <div
+          style={{
+            color: '#37352f',
+            fontFamily:
+              '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+            fontSize: '11px',
+            fontWeight: hovered ? 600 : 400,
+            letterSpacing: '0.01em',
+            whiteSpace: 'nowrap',
+            transform: 'translateY(-28px)',
+            textAlign: 'center',
+            opacity: hovered ? 1 : 0.75,
+          }}
+        >
+          {node.label}
+        </div>
+      </Html>
     </>
   );
 }

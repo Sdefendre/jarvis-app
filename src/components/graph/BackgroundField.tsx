@@ -5,12 +5,12 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-const PARTICLE_COUNT = 150;
-const SPREAD = 300;
-const PARTICLE_SIZE = 0.15;
-const OPACITY = 0.08;
-const DRIFT_SPEED = 0.003;
-const COLOR = '#b0b0c0';
+const PARTICLE_COUNT = 100;
+const SPREAD = 350;
+const PARTICLE_SIZE = 0.3;
+const OPACITY = 0.06;
+const DRIFT_SPEED = 0.002;
+const COLOR = '#c0c0d0';
 
 export function BackgroundField() {
   const pointsRef = useRef<THREE.Points>(null);
