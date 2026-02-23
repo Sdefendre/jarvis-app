@@ -47,8 +47,8 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
     meshRef.current.quaternion.copy(_quat);
 
     const mat = meshRef.current.material as THREE.MeshBasicMaterial;
-    // Update color immediately when it changes
     mat.color.set(lineColorProp);
+    mat.needsUpdate = true;
     const targetOpacity = highlighted ? 0.8 : 0.5;
     mat.opacity += (targetOpacity - mat.opacity) * 0.1;
   });
