@@ -91,5 +91,17 @@ export function MarkdownEditor({ tabId, content }: MarkdownEditorProps) {
     };
   }, [tabId]); // Only recreate when tab changes
 
+  // Sync external content changes (e.g. AI edits) into the editor
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    const current = view.state.doc.toString();
+    if (content !== current) {
+      view.dispatch({
+        changes: { from: 0, to: current.length, insert: content },
+      });
+    }
+  }, [content]);
+
   return <div ref={containerRef} className="h-full overflow-auto" />;
 }

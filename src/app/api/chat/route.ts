@@ -6,7 +6,7 @@ import path from 'path';
 // Types
 // ---------------------------------------------------------------------------
 
-type Provider = 'ollama' | 'openai' | 'anthropic' | 'xai';
+type Provider = 'ollama' | 'openai' | 'anthropic' | 'xai' | 'google';
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -368,7 +368,7 @@ async function handleAnthropic(
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
-        'anthropic-version': '2024-10-22',
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify(body),
     });
@@ -730,6 +730,170 @@ async function handleOllama(
 }
 
 // ---------------------------------------------------------------------------
+// Google Gemini  (agentic tool loop)
+// ---------------------------------------------------------------------------
+
+function toolsForGemini() {
+  return [
+    {
+      functionDeclarations: [
+        {
+          name: 'list_files',
+          description: 'List all files in the current vault',
+          parameters: { type: 'OBJECT', properties: {}, required: [] },
+        },
+        {
+          name: 'read_file',
+          description: 'Read the contents of a file',
+          parameters: {
+            type: 'OBJECT',
+            properties: { path: { type: 'STRING', description: 'The file path relative to vault root' } },
+            required: ['path'],
+          },
+        },
+        {
+          name: 'write_file',
+          description: 'Write or create a file with given content',
+          parameters: {
+            type: 'OBJECT',
+            properties: {
+              path: { type: 'STRING', description: 'The file path relative to vault root' },
+              content: { type: 'STRING', description: 'The content to write' },
+            },
+            required: ['path', 'content'],
+          },
+        },
+        {
+          name: 'edit_file',
+          description: 'Edit a file by replacing old text with new text',
+          parameters: {
+            type: 'OBJECT',
+            properties: {
+              path: { type: 'STRING', description: 'The file path relative to vault root' },
+              old_text: { type: 'STRING', description: 'The text to find and replace' },
+              new_text: { type: 'STRING', description: 'The replacement text' },
+            },
+            required: ['path', 'old_text', 'new_text'],
+          },
+        },
+        {
+          name: 'delete_file',
+          description: 'Delete a file',
+          parameters: {
+            type: 'OBJECT',
+            properties: { path: { type: 'STRING', description: 'The file path relative to vault root' } },
+            required: ['path'],
+          },
+        },
+        {
+          name: 'search_files',
+          description: 'Search for text across all files in the vault',
+          parameters: {
+            type: 'OBJECT',
+            properties: { query: { type: 'STRING', description: 'The search query' } },
+            required: ['query'],
+          },
+        },
+      ],
+    },
+  ];
+}
+
+async function handleGoogle(
+  messages: ChatMessage[],
+  model: string,
+  apiKey: string,
+  vaultRoot: string,
+  sysPrompt: string = SYSTEM_PROMPT,
+): Promise<{ message: string; toolCalls: ToolCallRecord[] }> {
+  const tools = toolsForGemini();
+  const toolCalls: ToolCallRecord[] = [];
+  const MAX_ITERATIONS = 10;
+
+  // Convert messages to Gemini format
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const contents: any[] = [];
+  for (const msg of messages) {
+    if (msg.role === 'system') continue; // handled via systemInstruction
+    contents.push({
+      role: msg.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: msg.content }],
+    });
+  }
+
+  for (let i = 0; i < MAX_ITERATIONS; i++) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: sysPrompt }] },
+          contents,
+          tools,
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Gemini error (${res.status}): ${text}`);
+    }
+
+    const data = await res.json();
+    const candidate = data.candidates?.[0];
+    if (!candidate) throw new Error('No candidates returned from Gemini');
+
+    const parts = candidate.content?.parts ?? [];
+
+    // Check for function calls
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const functionCalls = parts.filter((p: any) => p.functionCall);
+
+    if (functionCalls.length > 0) {
+      // Append model response
+      contents.push({ role: 'model', parts });
+
+      // Execute tools and build responses
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const functionResponses: any[] = [];
+      for (const fc of functionCalls) {
+        const name = fc.functionCall.name;
+        const args = fc.functionCall.args ?? {};
+
+        let result: string;
+        try {
+          result = await executeTool(name, args, vaultRoot);
+        } catch (err) {
+          result = `Error: ${err instanceof Error ? err.message : String(err)}`;
+        }
+
+        toolCalls.push({ name, args, result });
+        functionResponses.push({
+          functionResponse: { name, response: { result } },
+        });
+      }
+
+      contents.push({ role: 'user', parts: functionResponses });
+      continue;
+    }
+
+    // Extract text response
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const textPart = parts.find((p: any) => p.text);
+    return {
+      message: textPart?.text ?? 'No response from Gemini',
+      toolCalls,
+    };
+  }
+
+  return {
+    message: 'Reached maximum tool call iterations. Please try again with a simpler request.',
+    toolCalls,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Route handler
 // ---------------------------------------------------------------------------
 
@@ -782,6 +946,19 @@ export async function POST(req: Request) {
         );
       }
       const result = await handleAnthropic(messages, model, key, vaultRoot, sysPrompt);
+      return NextResponse.json(result);
+    }
+
+    // ----- Google Gemini -----
+    if (provider === 'google') {
+      const key = apiKey || process.env.GOOGLE_API_KEY;
+      if (!key) {
+        return NextResponse.json(
+          { error: 'Google API key not configured. Set GOOGLE_API_KEY in .env.local or pass apiKey.' },
+          { status: 503 },
+        );
+      }
+      const result = await handleGoogle(messages, model, key, vaultRoot, sysPrompt);
       return NextResponse.json(result);
     }
 
