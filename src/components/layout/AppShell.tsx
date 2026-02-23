@@ -9,9 +9,9 @@ import { FileTree } from '@/components/sidebar/FileTree';
 import { KnowledgeGraph } from '@/components/graph/KnowledgeGraph';
 import { EditorPanel } from '@/components/editor/EditorPanel';
 import { ChatPanel } from '@/components/chat/ChatPanel';
-import { GraphSettings } from '@/components/graph/GraphSettings';
+import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, Minus, Plus, PanelLeftClose, Maximize, X } from 'lucide-react';
+import { ChevronRight, Minus, Plus, PanelLeftClose, Maximize, X, Settings } from 'lucide-react';
 
 export function AppShell() {
   const { loadVault, setGraphData, refreshFiles, loading } = useVaultStore();
@@ -29,6 +29,8 @@ export function AppShell() {
     toggleSidebar,
     toggleEditorCollapsed,
     toggleChat,
+    settingsOpen,
+    toggleSettings,
   } = useUIStore();
   const { zoomIn, zoomOut } = useGraphStore();
   const editorDividerRef = useRef<HTMLDivElement>(null);
@@ -37,6 +39,48 @@ export function AppShell() {
   const [sidebarDividerHover, setSidebarDividerHover] = useState(false);
   const [editorDragging, setEditorDragging] = useState(false);
   const [sidebarDragging, setSidebarDragging] = useState(false);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle Cmd (Mac) / Ctrl (Win) combos
+      if (!(e.metaKey || e.ctrlKey)) return;
+
+      switch (e.key) {
+        case '1': // Cmd+1: Toggle sidebar
+          e.preventDefault();
+          toggleSidebar();
+          break;
+        case '2': // Cmd+2: Toggle graph
+          e.preventDefault();
+          toggleGraphCollapsed();
+          break;
+        case '3': // Cmd+3: Toggle editor/notes
+          e.preventDefault();
+          toggleEditorCollapsed();
+          break;
+        case '4': // Cmd+4: Toggle chat
+          e.preventDefault();
+          toggleChat();
+          break;
+        case 'n': // Cmd+N: New note
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('traces:new-note'));
+          break;
+        case 'f': // Cmd+F: Focus search
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('traces:focus-search'));
+          break;
+        case '\\': // Cmd+\: Toggle fullscreen graph
+          e.preventDefault();
+          toggleGraphFullscreen();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSidebar, toggleGraphCollapsed, toggleEditorCollapsed, toggleChat, toggleGraphFullscreen]);
 
   useEffect(() => {
     loadVault();
@@ -142,14 +186,12 @@ export function AppShell() {
   const editorVisible = !editorCollapsed;
   const chatVisible = chatOpen;
 
-  // Dynamic flex: the first visible panel in priority order gets flex-grow
-  // when the panels above it are all collapsed
-  const sidebarFlex = !sidebarCollapsed && !graphVisible && !editorVisible && !chatVisible;
+  // Dynamic flex: panels expand to fill space when graph is collapsed
   const editorFlex = editorVisible && !graphVisible;
   const chatFlex = chatVisible && !graphVisible && !editorVisible;
 
   // Collapsed tab strip — vertical label with icon
-  const CollapsedTab = ({ label, icon: Icon, onClick, title }: { label: string; icon: React.ElementType; onClick: () => void; title: string }) => (
+  const CollapsedTab = ({ label, icon: Icon, onClick, title }: { label: string; icon: React.ComponentType<{ className?: string }>; onClick: () => void; title: string }) => (
     <button
       onClick={onClick}
       title={title}
@@ -192,7 +234,8 @@ export function AppShell() {
           <div
             className="panel-glass overflow-hidden"
             style={{
-              ...(sidebarFlex ? { flex: '1 1 0%' } : { width: sidebarWidth, flexShrink: 0 }),
+              width: sidebarWidth,
+              flexShrink: 0,
               borderRight: '1px solid var(--glass-border)',
             }}
           >
@@ -243,10 +286,6 @@ export function AppShell() {
             <Button variant="ghost" size="icon-sm" onClick={toggleGraphFullscreen} title="Fullscreen" className="text-muted-foreground hover:text-foreground">
               <Maximize className="size-3.5" />
             </Button>
-
-            <div className="w-px h-4 bg-white/10 mx-0.5" />
-
-            <GraphSettings />
           </div>
         )}
       </div>
@@ -293,6 +332,32 @@ export function AppShell() {
           <ChatPanel />
         </div>
       )}
+
+      {/* Settings panel — slides from right */}
+      {settingsOpen && (
+        <div
+          className="panel-glass overflow-hidden"
+          style={{
+            width: 300,
+            flexShrink: 0,
+            borderLeft: '1px solid var(--glass-border)',
+          }}
+        >
+          <SettingsPanel />
+        </div>
+      )}
+
+      {/* Settings button — fixed bottom-left */}
+      <button
+        onClick={toggleSettings}
+        title="Settings"
+        className="fixed bottom-3 left-3 z-[60] flex items-center justify-center size-8 rounded-lg titlebar-no-drag text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors"
+        style={{
+          backgroundColor: settingsOpen ? 'rgba(255,255,255,0.08)' : 'transparent',
+        }}
+      >
+        <Settings className="size-4" />
+      </button>
     </div>
   );
 }
