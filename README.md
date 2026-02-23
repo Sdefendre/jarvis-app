@@ -16,11 +16,36 @@ The interface is built around four collapsible panels -- Files, Graph, Notes, an
 
 ### 3D Knowledge Graph
 
-Interactive force-directed graph visualization of notes and their connections, rendered with React Three Fiber and Three.js. Nodes represent notes and edges represent wiki-links between them. Includes configurable node size, label visibility, line thickness, line color, auto-rotation, and rotation speed. Background starfield with bloom post-processing.
+Interactive force-directed graph visualization of notes and their connections, rendered with React Three Fiber and Three.js. Nodes represent notes and edges represent wiki-links between them. Background starfield with bloom post-processing.
 
 ### Markdown Editor
 
-CodeMirror 6-based editor with wiki-link support (`[[note name]]`) for navigating between notes. Features syntax highlighting, auto-save, light and dark themes, a live preview mode, and word count statistics.
+CodeMirror 6-based editor with wiki-link support (`[[note name]]`) for navigating between notes. Features syntax highlighting, auto-save, light and dark themes, and wiki-link autocomplete.
+
+### Markdown Preview
+
+Toggle between edit mode and a rendered preview of the current note. The preview supports headings, bold, italic, inline code, fenced code blocks, bullet lists, and clickable wiki-links. Switch modes with the Preview/Edit button in the editor toolbar.
+
+### Note Title Sync
+
+Changing the `# Title` heading in a note automatically renames the underlying file after a 1.5-second debounce. The file tree, active tab, and editor breadcrumb all update to reflect the new name without manual intervention.
+
+### Word Count Status Bar
+
+The bottom of the editor displays a persistent status bar showing word count, character count, estimated reading time, and line count for the current note.
+
+### Open Chat from Notes
+
+A MessageCircle button in the editor header opens the AI chat panel directly from the notes view, making it easy to invoke the AI assistant while writing. The button appears when the chat panel is closed.
+
+### Dedicated Settings Panel
+
+Accessed via the gear icon fixed at the bottom-left corner of the window. The settings panel slides in from the right and contains two sections:
+
+- **Graph** -- node size, show labels, line thickness, auto-rotate, rotate speed, and line color (via color picker).
+- **Editor** -- light/dark mode toggle.
+
+Graph settings were moved out of the graph popover into this dedicated panel for a cleaner interface.
 
 ### AI Chat (TracesAI)
 
@@ -40,11 +65,11 @@ Hierarchical file browser with search, context menus, and new note/folder creati
 
 ### Collapsible Panel Layout
 
-Four panels (Files, Graph, Notes, Chat) can be independently collapsed to a vertical tab strip on the left side of the window. Dynamic resizing fills available space. Drag dividers to adjust panel widths.
+Four panels (Files, Graph, Notes, Chat) can be independently collapsed to a vertical tab strip on the left side of the window. Dynamic resizing fills available space when panels are collapsed.
 
-### Settings Panel
+### Draggable Panel Dividers
 
-Accessed via the gear icon at the bottom-left of the sidebar. Contains graph settings (node size, labels, line thickness, auto-rotate, rotate speed, line color) and editor settings.
+All panel borders -- sidebar-to-graph, graph-to-editor, and editor-to-chat -- are draggable dividers that allow resizing panels by click-and-drag. Dividers highlight on hover and during drag for clear visual feedback.
 
 ### Glass UI
 
