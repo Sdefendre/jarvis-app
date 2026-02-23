@@ -20,7 +20,7 @@ interface OllamaModel {
 
 // Hard-coded cloud model options
 const OPENAI_MODELS = ['gpt-4o', 'gpt-4o-mini'];
-const CLAUDE_MODELS = ['claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'];
+const CLAUDE_MODELS = ['claude-sonnet-4-6-20250514', 'claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'];
 const XAI_MODELS = ['grok-3-fast'];
 
 // ---------------------------------------------------------------------------
@@ -161,31 +161,62 @@ export function ChatPanel() {
     ? 'Select a model above and start chatting.'
     : 'Ollama is not running. You can still use OpenAI, Claude, or Grok (requires API keys in .env.local).';
 
+  const clearChat = useCallback(() => {
+    setMessages([]);
+    setError(null);
+  }, []);
+
   return (
-    <div className="flex flex-col h-full pt-10" style={{ backgroundColor: '#fff' }}>
+    <div className="flex flex-col h-full pt-10" style={{ backgroundColor: 'var(--bg, #fff)' }}>
+      {/* Typing indicator keyframes */}
+      <style>{`
+        @keyframes typingDot {
+          0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+          40% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
+
       {/* Header */}
       <div
         className="flex items-center justify-between px-3 py-2"
-        style={{ borderBottom: '1px solid #e0e0e0' }}
+        style={{ borderBottom: '1px solid var(--border, #e0e0e0)' }}
       >
-        <span className="text-sm font-semibold" style={{ color: '#111' }}>
-          AI Chat
-        </span>
-        <button
-          onClick={toggleChat}
-          className="transition-colors text-sm"
-          style={{ color: '#bbb' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = '#111')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = '#bbb')}
-        >
-          &times;
-        </button>
+        <div className="flex flex-col">
+          <span className="text-sm font-semibold" style={{ color: 'var(--text, #111)' }}>
+            AI Chat
+          </span>
+          <span className="text-xs" style={{ color: 'var(--text-secondary, #888)' }}>
+            {model || 'No model selected'}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {messages.length > 0 && (
+            <button
+              onClick={clearChat}
+              className="transition-colors text-xs"
+              style={{ color: 'var(--text-secondary, #888)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #111)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary, #888)')}
+            >
+              Clear chat
+            </button>
+          )}
+          <button
+            onClick={toggleChat}
+            className="transition-colors text-sm"
+            style={{ color: 'var(--text-dim, #bbb)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text, #111)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-dim, #bbb)')}
+          >
+            &times;
+          </button>
+        </div>
       </div>
 
       {/* Model Selector */}
       <div
         className="px-3 py-2 flex items-center gap-2"
-        style={{ borderBottom: '1px solid #e0e0e0' }}
+        style={{ borderBottom: '1px solid var(--border, #e0e0e0)' }}
       >
         {ollamaRunning && (
           <span
@@ -206,9 +237,9 @@ export function ChatPanel() {
           onChange={handleModelChange}
           className="flex-1 text-sm rounded px-2 py-1.5 appearance-none cursor-pointer"
           style={{
-            backgroundColor: '#fff',
-            border: '1px solid #e0e0e0',
-            color: '#111',
+            backgroundColor: 'var(--bg, #fff)',
+            border: '1px solid var(--border, #e0e0e0)',
+            color: 'var(--text, #111)',
             outline: 'none',
             backgroundImage:
               'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23888\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
@@ -222,7 +253,7 @@ export function ChatPanel() {
           }}
           onBlur={(e) => {
             e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = '#e0e0e0';
+            e.currentTarget.style.borderColor = 'var(--border, #e0e0e0)';
           }}
         >
           {ollamaModels.length > 0 && (
@@ -265,10 +296,10 @@ export function ChatPanel() {
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
           <div className="text-sm text-center mt-8">
-            <p className="mb-2" style={{ color: '#888' }}>
+            <p className="mb-2" style={{ color: 'var(--text-secondary, #888)' }}>
               Jarvis AI Assistant
             </p>
-            <p style={{ color: '#bbb', maxWidth: 260, margin: '0 auto' }}>
+            <p style={{ color: 'var(--text-dim, #bbb)', maxWidth: 260, margin: '0 auto' }}>
               {emptyStateText}
             </p>
           </div>
@@ -281,14 +312,14 @@ export function ChatPanel() {
             style={
               msg.role === 'user'
                 ? {
-                    color: '#111',
-                    backgroundColor: '#fff',
-                    border: '1px solid #e0e0e0',
+                    color: 'var(--text, #111)',
+                    backgroundColor: 'var(--bg, #fff)',
+                    border: '1px solid var(--border, #e0e0e0)',
                   }
                 : {
-                    color: '#111',
-                    borderLeft: '3px solid #111',
-                    backgroundColor: '#f5f5f5',
+                    color: 'var(--text, #111)',
+                    borderLeft: '3px solid var(--text, #111)',
+                    backgroundColor: 'var(--bg-secondary, #f5f5f5)',
                   }
             }
           >
@@ -302,8 +333,21 @@ export function ChatPanel() {
         ))}
 
         {loading && (
-          <div className="text-xs" style={{ color: '#bbb' }}>
-            Thinking...
+          <div className="flex items-center gap-1 py-1">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                style={{
+                  display: 'inline-block',
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--text-dim, #bbb)',
+                  animation: 'typingDot 1.4s infinite',
+                  animationDelay: `${i * 0.2}s`,
+                }}
+              />
+            ))}
           </div>
         )}
 
@@ -311,9 +355,9 @@ export function ChatPanel() {
           <div
             className="text-xs p-2 rounded"
             style={{
-              color: '#d00',
-              backgroundColor: 'rgba(200,0,0,0.04)',
-              border: '1px solid rgba(200,0,0,0.15)',
+              color: '#ef4444',
+              backgroundColor: 'rgba(239,68,68,0.04)',
+              border: '1px solid rgba(239,68,68,0.15)',
             }}
           >
             {error}
@@ -322,7 +366,7 @@ export function ChatPanel() {
       </div>
 
       {/* Input */}
-      <div className="p-3" style={{ borderTop: '1px solid #e0e0e0' }}>
+      <div className="p-3" style={{ borderTop: '1px solid var(--border, #e0e0e0)' }}>
         <div className="flex gap-2">
           <input
             type="text"
@@ -332,9 +376,9 @@ export function ChatPanel() {
             placeholder="Ask Jarvis..."
             className="flex-1 px-3 py-2 text-sm rounded placeholder:text-gray-400 focus:outline-none"
             style={{
-              backgroundColor: '#f5f5f5',
-              border: '1px solid #e0e0e0',
-              color: '#111',
+              backgroundColor: 'var(--bg-secondary, #f5f5f5)',
+              border: '1px solid var(--border, #e0e0e0)',
+              color: 'var(--text, #111)',
             }}
             onFocus={(e) => {
               e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.1)';
@@ -342,7 +386,7 @@ export function ChatPanel() {
             }}
             onBlur={(e) => {
               e.currentTarget.style.boxShadow = 'none';
-              e.currentTarget.style.borderColor = '#e0e0e0';
+              e.currentTarget.style.borderColor = 'var(--border, #e0e0e0)';
             }}
           />
           <button

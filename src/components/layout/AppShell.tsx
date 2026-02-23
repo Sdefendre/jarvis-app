@@ -107,12 +107,12 @@ export function AppShell() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen" style={{ backgroundColor: '#ffffff' }}>
+      <div className="flex items-center justify-center h-screen" style={{ backgroundColor: 'var(--bg, #fff)' }}>
         <div className="text-center">
-          <div className="text-2xl font-semibold mb-4" style={{ color: '#2383e2' }}>
+          <div className="text-2xl font-semibold mb-4" style={{ color: 'var(--text, #111)' }}>
             JARVIS
           </div>
-          <div className="text-sm" style={{ color: '#787774' }}>Initializing neural network...</div>
+          <div className="text-sm" style={{ color: 'var(--text-secondary, #888)' }}>Initializing neural network...</div>
         </div>
       </div>
     );
@@ -121,7 +121,7 @@ export function AppShell() {
   /* ---- Fullscreen overlay ---- */
   if (graphFullscreen) {
     return (
-      <div className="fixed inset-0 z-[100] bg-void">
+      <div className="fixed inset-0 z-[100]" style={{ backgroundColor: 'var(--bg, #fff)' }}>
         {/* Title bar drag region */}
         <div className="fixed top-0 left-0 right-0 h-8 titlebar-drag z-[110]" />
 
@@ -129,7 +129,8 @@ export function AppShell() {
 
         {/* Floating toolbar — exit fullscreen only */}
         <div
-          className="fixed top-10 right-3 z-[120] flex gap-1 rounded-lg border border-gray-200 bg-white px-1.5 py-1 shadow-sm"
+          className="fixed top-10 right-3 z-[120] flex gap-1 rounded-lg px-1.5 py-1 shadow-sm"
+          style={{ border: '1px solid var(--border, #e0e0e0)', backgroundColor: 'var(--bg, #fff)' }}
         >
           <button
             onClick={toggleGraphFullscreen}
@@ -144,7 +145,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex h-screen bg-void overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--bg, #fff)' }}>
       {/* Title bar drag region */}
       <div className="fixed top-0 left-0 right-0 h-8 titlebar-drag z-50" />
 
@@ -168,7 +169,7 @@ export function AppShell() {
           backgroundColor:
             sidebarDragging || sidebarDividerHover
               ? '#2383e2'
-              : 'var(--color-border, #e5e7eb)',
+              : 'var(--border, #e0e0e0)',
         }}
       >
         {/* Invisible wider hit area */}
@@ -189,7 +190,8 @@ export function AppShell() {
         {/* Floating toolbar — collapse & fullscreen */}
         {!graphCollapsed && (
           <div
-            className="absolute top-10 right-3 z-30 flex gap-1 rounded-lg border border-gray-200 bg-white px-1.5 py-1 shadow-sm"
+            className="absolute top-10 right-3 z-30 flex gap-1 rounded-lg px-1.5 py-1 shadow-sm"
+            style={{ border: '1px solid var(--border, #e0e0e0)', backgroundColor: 'var(--bg, #fff)' }}
           >
             <button
               onClick={toggleGraphCollapsed}
@@ -259,7 +261,7 @@ export function AppShell() {
           backgroundColor:
             editorDragging || editorDividerHover
               ? '#2383e2'
-              : 'var(--color-border, #e5e7eb)',
+              : 'var(--border, #e0e0e0)',
         }}
       >
         {/* Invisible wider hit area */}
