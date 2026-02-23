@@ -7,10 +7,16 @@ import { OrbitControls } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import { GraphScene } from './GraphScene';
 import { BackgroundField } from './BackgroundField';
+import { useUIStore } from '@/stores/ui-store';
 import * as THREE from 'three';
 
 export function KnowledgeGraph() {
-  const bgColor = useMemo(() => new THREE.Color('#f7f7f8'), []);
+  const { darkMode } = useUIStore();
+
+  const bgColor = useMemo(
+    () => new THREE.Color(darkMode ? '#1a1a1a' : '#f7f7f8'),
+    [darkMode],
+  );
 
   return (
     <div className="w-full h-full">
@@ -19,10 +25,10 @@ export function KnowledgeGraph() {
         gl={{ antialias: true, alpha: false }}
         scene={{ background: bgColor }}
       >
-        {/* Bright lighting for white theme */}
-        <ambientLight intensity={1.2} />
-        <pointLight position={[80, 80, 80]} color="#ffffff" intensity={0.8} />
-        <pointLight position={[-60, -40, 60]} color="#ffffff" intensity={0.4} />
+        {/* Lighting adjusts for theme */}
+        <ambientLight intensity={darkMode ? 0.4 : 1.2} />
+        <pointLight position={[80, 80, 80]} color="#ffffff" intensity={darkMode ? 0.3 : 0.8} />
+        <pointLight position={[-60, -40, 60]} color="#ffffff" intensity={darkMode ? 0.2 : 0.4} />
 
         {/* Subtle ambient particles */}
         <BackgroundField />
@@ -43,12 +49,12 @@ export function KnowledgeGraph() {
         {/* Graph content */}
         <GraphScene />
 
-        {/* Bloom post-processing for glow effect */}
+        {/* Bloom — stronger in dark mode for neon glow */}
         <EffectComposer>
           <Bloom
-            luminanceThreshold={0.2}
+            luminanceThreshold={darkMode ? 0.1 : 0.2}
             luminanceSmoothing={0.9}
-            intensity={0.6}
+            intensity={darkMode ? 1.2 : 0.6}
             mipmapBlur
           />
         </EffectComposer>

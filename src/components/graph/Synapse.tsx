@@ -5,6 +5,7 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { GraphEdge } from '@/types';
+import { useUIStore } from '@/stores/ui-store';
 
 interface SynapseProps {
   edge: GraphEdge;
@@ -24,6 +25,8 @@ const _quat = new THREE.Quaternion();
 
 export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighted }: SynapseProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const { darkMode } = useUIStore();
+  const lineColor = useMemo(() => new THREE.Color(darkMode ? '#555555' : '#37352f'), [darkMode]);
 
   // Thickness based on edge type
   const radius = edge.type === 'wiki-link' ? 0.18 : edge.type === 'folder-sibling' ? 0.12 : 0.08;
@@ -57,7 +60,7 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
     <mesh ref={meshRef}>
       <cylinderGeometry args={[radius, radius, 1, 6, 1]} />
       <meshBasicMaterial
-        color="#37352f"
+        color={lineColor}
         transparent
         opacity={0.35}
         depthWrite={false}

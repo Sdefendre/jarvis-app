@@ -8,6 +8,7 @@ import * as THREE from 'three';
 import type { GraphNode, NodeCategory } from '@/types';
 import { CATEGORY_COLORS } from '@/types';
 import { useGraphStore } from '@/stores/graph-store';
+import { useUIStore } from '@/stores/ui-store';
 
 interface NeuralNodeProps {
   node: GraphNode;
@@ -21,6 +22,7 @@ export function NeuralNode({ node, position, isConnected, onSelect }: NeuralNode
   const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   const { hoveredNode, setHoveredNode } = useGraphStore();
+  const { darkMode } = useUIStore();
 
   const categoryColor = CATEGORY_COLORS[node.category as NodeCategory] || CATEGORY_COLORS.archive;
   const catColor = useMemo(() => new THREE.Color(categoryColor), [categoryColor]);
@@ -107,7 +109,7 @@ export function NeuralNode({ node, position, isConnected, onSelect }: NeuralNode
       <Html position={position} center style={{ pointerEvents: 'none' }}>
         <div
           style={{
-            color: '#37352f',
+            color: darkMode ? '#e5e5e5' : '#111',
             fontFamily:
               '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
             fontSize: '11px',
