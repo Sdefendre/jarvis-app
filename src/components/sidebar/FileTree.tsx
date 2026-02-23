@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useVaultStore } from '@/stores/vault-store';
 import { useEditorStore } from '@/stores/editor-store';
 import { useUIStore } from '@/stores/ui-store';
@@ -58,6 +58,31 @@ export function FileTree() {
   const [search, setSearch] = useState('');
   const [creating, setCreating] = useState(false);
   const [newFileName, setNewFileName] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Listen for global keyboard shortcut events
+  useEffect(() => {
+    const handleNewNote = () => {
+      // Expand sidebar if collapsed so the create input is visible
+      const { sidebarCollapsed } = useUIStore.getState();
+      if (sidebarCollapsed) useUIStore.getState().toggleSidebar();
+      setCreating(true);
+    };
+
+    const handleFocusSearch = () => {
+      // Expand sidebar if collapsed so the search input is visible
+      const { sidebarCollapsed } = useUIStore.getState();
+      if (sidebarCollapsed) useUIStore.getState().toggleSidebar();
+      searchInputRef.current?.focus();
+    };
+
+    window.addEventListener('traces:new-note', handleNewNote);
+    window.addEventListener('traces:focus-search', handleFocusSearch);
+    return () => {
+      window.removeEventListener('traces:new-note', handleNewNote);
+      window.removeEventListener('traces:focus-search', handleFocusSearch);
+    };
+  }, []);
 
   const filteredFiles = useMemo(() => {
     if (!search) return files;
@@ -120,6 +145,7 @@ export function FileTree() {
 
         {/* Search */}
         <input
+          ref={searchInputRef}
           type="text"
           placeholder="Search files..."
           value={search}
