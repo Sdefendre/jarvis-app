@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   createRealtimeSession: (opts: { apiKey: string; voice?: string; instructions?: string }) =>
     ipcRenderer.invoke('realtime:createSession', opts),
+  createGrokSession: (opts: { apiKey: string }) =>
+    ipcRenderer.invoke('realtime:createGrokSession', opts),
   executeRealtimeTool: (opts: { toolName: string; args: Record<string, string> }) =>
     ipcRenderer.invoke('realtime:executeTool', opts),
 

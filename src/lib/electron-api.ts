@@ -5,6 +5,10 @@ export interface RealtimeSessionResult {
   sessionId: string;
 }
 
+export interface GrokSessionResult {
+  clientSecret: string;
+}
+
 export interface ElectronAPI {
   listFiles: () => Promise<string[]>;
   readFile: (filePath: string) => Promise<string>;
@@ -17,6 +21,7 @@ export interface ElectronAPI {
   loadSettings: () => Promise<Record<string, unknown>>;
   saveSettings: (data: Record<string, unknown>) => Promise<void>;
   createRealtimeSession: (opts: { apiKey: string; voice?: string; instructions?: string }) => Promise<RealtimeSessionResult>;
+  createGrokSession: (opts: { apiKey: string }) => Promise<GrokSessionResult>;
   executeRealtimeTool: (opts: { toolName: string; args: Record<string, string> }) => Promise<string>;
   onFileChange: (callback: (event: string, filePath: string) => void) => () => void;
   onGraphUpdate: (callback: (data: GraphData) => void) => () => void;
@@ -109,6 +114,27 @@ export const electronAPI = {
       const api = getAPI();
       if (api) {
         return api.createRealtimeSession(opts);
+      }
+      throw fetchErr;
+    }
+  },
+
+  async createGrokSession(opts: { apiKey: string }): Promise<GrokSessionResult> {
+    try {
+      const res = await fetch('/api/realtime/grok-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(opts),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Grok session error (${res.status}): ${text}`);
+      }
+      return await res.json();
+    } catch (fetchErr) {
+      const api = getAPI();
+      if (api) {
+        return api.createGrokSession(opts);
       }
       throw fetchErr;
     }

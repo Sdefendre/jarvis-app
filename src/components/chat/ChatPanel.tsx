@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Send, ChevronLeft, ChevronRight, Eraser, Mic, MicOff, PhoneOff } from 'lucide-react';
 import { useRealtimeVoice, type TranscriptEvent, type VoiceToolCallEvent } from '@/hooks/useRealtimeVoice';
+import { useGrokVoice } from '@/hooks/useGrokVoice';
 import { VoiceWaveform } from './VoiceWaveform';
 
 // ---------------------------------------------------------------------------
@@ -248,14 +249,19 @@ export function ChatPanel() {
     }
   }, [refreshFiles, reloadTab]);
 
-  // Build voice instructions — always include TracesAI identity + tool info + any custom prompt
+  // Build voice instructions per provider
+  const voiceProvider = appSettings.voice.voiceProvider ?? 'openai';
+
   const voiceInstructions = (() => {
-    const base = 'You are TracesAI, a voice AI assistant embedded in a knowledge management app called Traces. You are running on the gpt-realtime model from OpenAI. Be conversational, helpful, and concise in your spoken responses. If the user asks what you are, tell them you are TracesAI. You have tools to manage the user\'s vault: list_files, read_file, write_file, edit_file, delete_file, and search_files. Use these tools when the user asks about their notes, wants to create or edit files, or search their vault.';
+    const modelName = voiceProvider === 'grok' ? 'Grok realtime' : 'gpt-realtime';
+    const providerName = voiceProvider === 'grok' ? 'xAI' : 'OpenAI';
+    const base = `You are TracesAI, a voice AI assistant embedded in a knowledge management app called Traces. You are running on the ${modelName} model from ${providerName}. Be conversational, helpful, and concise in your spoken responses. If the user asks what you are, tell them you are TracesAI. You have tools to manage the user's vault: list_files, read_file, write_file, edit_file, delete_file, and search_files. Use these tools when the user asks about their notes, wants to create or edit files, or search their vault.`;
     const custom = appSettings.customSystemPrompt?.trim();
     return custom ? `${custom}\n\n${base}` : base;
   })();
 
-  const { state: voiceState, connect: voiceConnect, disconnect: voiceDisconnect, audioLevel } = useRealtimeVoice({
+  // Both hooks are always called (React rules of hooks), but only the active one connects
+  const openaiVoice = useRealtimeVoice({
     apiKey: appSettings.apiKeys.openai,
     voice: appSettings.voice.voice,
     instructions: voiceInstructions,
@@ -264,6 +270,17 @@ export function ChatPanel() {
     onError: handleVoiceError,
   });
 
+  const grokVoice = useGrokVoice({
+    apiKey: appSettings.apiKeys.xai,
+    voice: appSettings.voice.grokVoice ?? 'Ara',
+    instructions: voiceInstructions,
+    onTranscript: handleTranscript,
+    onToolCall: handleVoiceToolCall,
+    onError: handleVoiceError,
+  });
+
+  const activeVoice = voiceProvider === 'grok' ? grokVoice : openaiVoice;
+  const { state: voiceState, connect: voiceConnect, disconnect: voiceDisconnect, audioLevel } = activeVoice;
 
   const toggleVoice = useCallback(() => {
     if (voiceMode) {
@@ -587,7 +604,7 @@ export function ChatPanel() {
                 <span className="text-xs font-medium" style={{ color: voiceState === 'connected' ? '#2383e2' : 'var(--text-secondary)' }}>
                   {voiceState === 'connecting' ? 'Connecting...' : voiceState === 'connected' ? 'Listening...' : 'Voice mode'}
                 </span>
-                <span className="text-[10px] text-muted-foreground">gpt-realtime</span>
+                <span className="text-[10px] text-muted-foreground">{voiceProvider === 'grok' ? 'grok' : 'gpt-realtime'}</span>
               </div>
             </div>
 

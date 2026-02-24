@@ -10,8 +10,9 @@ import {
   ALL_XAI_MODELS,
   ALL_GOOGLE_MODELS,
   ALL_VOICE_OPTIONS,
+  ALL_GROK_VOICE_OPTIONS,
 } from '@/stores/settings-store';
-import type { VoiceOption } from '@/stores/settings-store';
+import type { VoiceOption, GrokVoiceOption, VoiceProvider } from '@/stores/settings-store';
 import type { Provider } from '@/stores/settings-store';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
@@ -474,27 +475,67 @@ export function SettingsPanel() {
                 <div>
                   <SectionHeader>Voice</SectionHeader>
                   <p className="text-sm text-zinc-500 mb-5 -mt-2">
-                    Requires an OpenAI API key. Uses the Realtime API.
+                    {settings.voice.voiceProvider === 'grok'
+                      ? 'Requires an xAI API key. Uses the Grok Realtime API.'
+                      : 'Requires an OpenAI API key. Uses the Realtime API.'}
                   </p>
                   <div className="space-y-5">
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-sm text-zinc-400">Voice</span>
+                      <span className="text-sm text-zinc-400">Provider</span>
                       <select
-                        value={settings.voice.voice}
+                        value={settings.voice.voiceProvider}
                         onChange={(e) =>
                           updateSettings({
-                            voice: { ...settings.voice, voice: e.target.value as VoiceOption },
+                            voice: { ...settings.voice, voiceProvider: e.target.value as VoiceProvider },
                           })
                         }
                         className={selectClass}
                       >
-                        {ALL_VOICE_OPTIONS.map((v) => (
-                          <option key={v} value={v}>
-                            {v.charAt(0).toUpperCase() + v.slice(1)}
-                          </option>
-                        ))}
+                        <option value="openai">OpenAI</option>
+                        <option value="grok">Grok (xAI)</option>
                       </select>
                     </div>
+
+                    {settings.voice.voiceProvider === 'openai' ? (
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-sm text-zinc-400">Voice</span>
+                        <select
+                          value={settings.voice.voice}
+                          onChange={(e) =>
+                            updateSettings({
+                              voice: { ...settings.voice, voice: e.target.value as VoiceOption },
+                            })
+                          }
+                          className={selectClass}
+                        >
+                          {ALL_VOICE_OPTIONS.map((v) => (
+                            <option key={v} value={v}>
+                              {v.charAt(0).toUpperCase() + v.slice(1)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-sm text-zinc-400">Voice</span>
+                        <select
+                          value={settings.voice.grokVoice}
+                          onChange={(e) =>
+                            updateSettings({
+                              voice: { ...settings.voice, grokVoice: e.target.value as GrokVoiceOption },
+                            })
+                          }
+                          className={selectClass}
+                        >
+                          {ALL_GROK_VOICE_OPTIONS.map((v) => (
+                            <option key={v} value={v}>
+                              {v}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
                     <ToggleRow
                       label="Auto-play audio responses"
                       checked={settings.voice.autoPlayResponses}

@@ -105,6 +105,30 @@ export function registerIpcHandlers(vaultRoot: string) {
   );
 
   ipcMain.handle(
+    'realtime:createGrokSession',
+    async (_event, opts: { apiKey: string }) => {
+      const key = (opts.apiKey && opts.apiKey.trim()) || process.env.XAI_API_KEY;
+      if (!key) throw new Error('xAI API key is required for Grok voice mode');
+      const res = await fetch('https://api.x.ai/v1/realtime/client_secrets', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ expires_after: { seconds: 300 } }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`xAI Realtime session error (${res.status}): ${text}`);
+      }
+      const data = (await res.json()) as { value?: string; client_secret?: string };
+      return {
+        clientSecret: data.value ?? data.client_secret ?? '',
+      };
+    }
+  );
+
+  ipcMain.handle(
     'realtime:executeTool',
     async (
       _event,

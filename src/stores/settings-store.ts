@@ -7,8 +7,16 @@ export type VoiceOption = 'alloy' | 'ash' | 'ballad' | 'coral' | 'echo' | 'sage'
 
 export const ALL_VOICE_OPTIONS: VoiceOption[] = ['alloy', 'ash', 'ballad', 'coral', 'echo', 'sage', 'shimmer', 'verse'];
 
+export type GrokVoiceOption = 'Ara' | 'Rex' | 'Sal' | 'Eve' | 'Leo';
+
+export const ALL_GROK_VOICE_OPTIONS: GrokVoiceOption[] = ['Ara', 'Rex', 'Sal', 'Eve', 'Leo'];
+
+export type VoiceProvider = 'openai' | 'grok';
+
 export interface VoiceSettings {
+  voiceProvider: VoiceProvider;
   voice: VoiceOption;
+  grokVoice: GrokVoiceOption;
   autoPlayResponses: boolean;
 }
 
@@ -61,7 +69,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   ollamaEndpoint: 'http://localhost:11434',
   customSystemPrompt: '',
 
-  voice: { voice: 'verse', autoPlayResponses: true },
+  voice: { voiceProvider: 'openai', voice: 'verse', grokVoice: 'Ara', autoPlayResponses: true },
 
   editorFontSize: 14,
   spellCheck: false,
