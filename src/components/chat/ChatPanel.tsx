@@ -253,6 +253,11 @@ export function ChatPanel() {
   // Voice provider — local state so user can switch without going to settings
   const [voiceProvider, setVoiceProvider] = useState<'openai' | 'grok'>(appSettings.voice.voiceProvider ?? 'openai');
 
+  // Sync voiceProvider when settings load or user changes it in Settings
+  useEffect(() => {
+    setVoiceProvider(appSettings.voice.voiceProvider ?? 'openai');
+  }, [appSettings.voice.voiceProvider]);
+
   const voiceInstructions = (() => {
     const modelName = voiceProvider === 'grok' ? 'Grok realtime' : 'gpt-realtime';
     const providerName = voiceProvider === 'grok' ? 'xAI' : 'OpenAI';
