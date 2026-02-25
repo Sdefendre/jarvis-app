@@ -131,59 +131,52 @@ export function EditorPanel() {
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: editorBg, color: editorText, transition: 'background-color 0.3s, color 0.3s' }}>
-      {/* Tab bar */}
+      {/* Unified Tab Bar + Actions */}
       <div
-        className="flex items-center overflow-x-auto pt-12 min-h-[68px] px-5 titlebar-drag"
+        className="flex items-end justify-between pt-12 pr-4 pl-3 relative z-[60] titlebar-drag"
         style={{ borderBottom: `1px solid ${editorBorder}` }}
       >
-        {tabs.map((tab) => {
-          const isActiveTab = tab.id === activeTabId;
-          return (
-            <div
-              key={tab.id}
-              className={`group flex items-center gap-1.5 px-3 h-full text-sm cursor-pointer transition-colors titlebar-no-drag ${
-                !isActiveTab ? 'hover:bg-accent/50' : ''
-              }`}
-              style={{
-                color: isActiveTab ? editorText : editorSecondary,
-                borderBottom: isActiveTab ? `2px solid ${editorText}` : '2px solid transparent',
-                fontWeight: isActiveTab ? 500 : 400,
-              }}
-              onClick={() => {
-                useEditorStore.getState().openFile(tab.path);
-                useVaultStore.getState().setActiveFile(tab.path);
-              }}
-            >
-              {tab.isDirty && (
-                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: editorSecondary }} />
-              )}
-              <span className="truncate max-w-[120px]">{tab.name}</span>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                className="ml-0.5 opacity-0 group-hover:opacity-100 transition-opacity size-4"
-                style={{ color: editorLightMode ? '#a1a1aa' : 'var(--text-dim)' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  closeTab(tab.id);
+        <div className="flex items-center h-[34px] overflow-x-auto hide-scrollbar flex-1">
+          {tabs.map((tab) => {
+            const isActiveTab = tab.id === activeTabId;
+            return (
+              <div
+                key={tab.id}
+                className={`group flex items-center gap-1.5 px-3 h-full text-sm cursor-pointer transition-colors titlebar-no-drag ${
+                  !isActiveTab ? 'hover:bg-accent/50' : ''
+                }`}
+                style={{
+                  color: isActiveTab ? editorText : editorSecondary,
+                  borderBottom: isActiveTab ? `2px solid ${editorText}` : '2px solid transparent',
+                  fontWeight: isActiveTab ? 500 : 400,
+                }}
+                onClick={() => {
+                  useEditorStore.getState().openFile(tab.path);
+                  useVaultStore.getState().setActiveFile(tab.path);
                 }}
               >
-                <X className="size-2.5" />
-              </Button>
-            </div>
-          );
-        })}
-      </div>
+                {tab.isDirty && (
+                  <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: editorSecondary }} />
+                )}
+                <span className="truncate max-w-[120px]">{tab.name}</span>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="ml-0.5 opacity-0 group-hover:opacity-100 transition-opacity size-4"
+                  style={{ color: editorLightMode ? '#a1a1aa' : 'var(--text-dim)' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    closeTab(tab.id);
+                  }}
+                >
+                  <X className="size-2.5" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
 
-      {/* Breadcrumb + collapse + theme toggle */}
-      <div
-        className="flex items-center justify-end pl-5 pr-8 py-2 gap-2 relative z-[60] titlebar-drag"
-        style={{ borderBottom: `1px solid ${editorBorder}` }}
-      >
-        <span className="text-sm truncate absolute left-1/2 -translate-x-1/2 font-medium max-w-[40%] text-center" style={{ color: editorSecondary }}>
-          {activeTab.path.replace(/\//g, ' / ')}
-        </span>
-        <div className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 glass titlebar-no-drag">
+        <div className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 mb-1.5 ml-4 glass titlebar-no-drag flex-shrink-0">
           {!chatOpen && (
             <Button
               variant="ghost"
