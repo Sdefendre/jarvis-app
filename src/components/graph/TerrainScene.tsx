@@ -18,7 +18,7 @@ export function TerrainScene({ controlsRef }: { controlsRef?: React.RefObject<an
   const { openFile } = useEditorStore();
   const { selectedNode, setSelectedNode, settings } = useGraphStore();
   const { setActiveFile } = useVaultStore();
-  const { getPositions } = useTerrainLayout(graphData.nodes, graphData.edges);
+  const { getPositions, config } = useTerrainLayout(graphData.nodes, graphData.edges);
   const { camera } = useThree();
   const cameraTargetPosRef = useRef<THREE.Vector3 | null>(null);
   const cameraLerpFrames = useRef(0);
@@ -68,7 +68,7 @@ export function TerrainScene({ controlsRef }: { controlsRef?: React.RefObject<an
 
   return (
     <>
-      <TerrainMesh />
+      <TerrainMesh config={config} />
 
       {graphData.nodes.map((node) => {
         const pos = positions.get(node.id);
