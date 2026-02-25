@@ -478,10 +478,10 @@ The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'lo
 
       {/* Header — collapse + clear */}
       <div
-        className="flex items-center justify-between px-3 pt-12 pb-2 relative z-[60] titlebar-drag"
+        className="flex items-center justify-end px-3 pt-12 pb-2 relative z-[60] titlebar-drag"
         style={{ borderBottom: '1px solid var(--border)' }}
       >
-        <span className="text-sm text-muted-foreground">Chat</span>
+        <span className="text-sm text-muted-foreground absolute left-1/2 -translate-x-1/2 font-medium">Chat</span>
         <div className="flex items-center gap-0.5">
           {messages.length > 0 && (
             <Button variant="ghost" size="icon-xs" onClick={clearChat} title="Clear chat" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
