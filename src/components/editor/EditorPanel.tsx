@@ -76,8 +76,8 @@ export function EditorPanel() {
     return (
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between pl-3 pr-8 pt-12 pb-2 relative z-[60] titlebar-drag" style={{ borderBottom: '1px solid var(--border)' }}>
-          <span className="text-sm text-muted-foreground">Notes</span>
+        <div className="flex items-center justify-end pl-3 pr-8 pt-12 pb-2 relative z-[60] titlebar-drag" style={{ borderBottom: '1px solid var(--border)' }}>
+          <span className="text-sm text-muted-foreground absolute left-1/2 -translate-x-1/2 font-medium">Notes</span>
           <div className="flex items-center gap-0.5">
             {!chatOpen && (
               <Button variant="ghost" size="icon-xs" onClick={() => setChatOpen(true)} title="Open AI Chat" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
@@ -189,10 +189,10 @@ export function EditorPanel() {
           >
             <ChevronLeft className="size-3.5" />
           </Button>
-          <span className="text-sm truncate" style={{ color: editorSecondary }}>
-            {activeTab.path.replace(/\//g, ' / ')}
-          </span>
         </div>
+        <span className="text-sm truncate absolute left-1/2 -translate-x-1/2 font-medium max-w-[40%] text-center" style={{ color: editorSecondary }}>
+          {activeTab.path.replace(/\//g, ' / ')}
+        </span>
         <div className="flex items-center gap-1.5 titlebar-no-drag">
           {!chatOpen && (
             <Button
