@@ -165,7 +165,7 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
 // ---------------------------------------------------------------------------
 export function ChatPanel() {
   const { toggleChat } = useUIStore();
-  const { refreshFiles } = useVaultStore();
+  const { refreshFiles, vaultName, files } = useVaultStore();
   const { reloadTab } = useEditorStore();
   const { settings: appSettings } = useSettingsStore();
 
@@ -249,13 +249,15 @@ export function ChatPanel() {
     }
   }, [refreshFiles, reloadTab]);
 
-  // Build voice instructions per provider
-  const voiceProvider = appSettings.voice.voiceProvider ?? 'openai';
+  // Voice provider — local state so user can switch without going to settings
+  const [voiceProvider, setVoiceProvider] = useState<'openai' | 'grok'>(appSettings.voice.voiceProvider ?? 'openai');
 
   const voiceInstructions = (() => {
     const modelName = voiceProvider === 'grok' ? 'Grok realtime' : 'gpt-realtime';
     const providerName = voiceProvider === 'grok' ? 'xAI' : 'OpenAI';
-    const base = `You are TracesAI, a voice AI assistant embedded in a knowledge management app called Traces. You are running on the ${modelName} model from ${providerName}. Be conversational, helpful, and concise in your spoken responses. If the user asks what you are, tell them you are TracesAI. You have tools to manage the user's vault: list_files, read_file, write_file, edit_file, delete_file, and search_files. Use these tools when the user asks about their notes, wants to create or edit files, or search their vault.`;
+    const base = `You are TracesAI, a voice AI assistant embedded in a knowledge management app called Traces. You are running on the ${modelName} model from ${providerName}. Be conversational, helpful, and concise in your spoken responses. If the user asks what you are, tell them you are TracesAI. You have tools to manage the user's vault: list_files, read_file, write_file, edit_file, delete_file, and search_files. Use these tools when the user asks about their notes, wants to create or edit files, or search their vault.
+
+The user's current vault is called "${vaultName}" and contains ${files.length} note${files.length === 1 ? '' : 's'}.`;
     const custom = appSettings.customSystemPrompt?.trim();
     return custom ? `${custom}\n\n${base}` : base;
   })();
@@ -700,15 +702,25 @@ export function ChatPanel() {
               style={{ color: 'var(--text)' }}
             />
 
-            {/* Mic button */}
-            <button
-              onClick={toggleVoice}
-              title="Start voice conversation"
-              className="flex-shrink-0 flex items-center justify-center size-7 rounded-lg transition-colors hover:bg-white/[0.1]"
-              style={{ background: 'rgba(255,255,255,0.06)' }}
-            >
-              <Mic className="size-3.5 text-muted-foreground" />
-            </button>
+            {/* Voice provider toggle + mic */}
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <button
+                onClick={() => setVoiceProvider(voiceProvider === 'openai' ? 'grok' : 'openai')}
+                title={`Voice: ${voiceProvider === 'openai' ? 'OpenAI' : 'Grok'} (click to switch)`}
+                className="flex items-center justify-center h-7 px-1.5 rounded-l-lg text-[10px] font-medium transition-colors hover:bg-white/[0.1]"
+                style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}
+              >
+                {voiceProvider === 'openai' ? 'GPT' : 'Grok'}
+              </button>
+              <button
+                onClick={toggleVoice}
+                title="Start voice conversation"
+                className="flex items-center justify-center size-7 rounded-r-lg transition-colors hover:bg-white/[0.1]"
+                style={{ background: 'rgba(255,255,255,0.06)' }}
+              >
+                <Mic className="size-3.5 text-muted-foreground" />
+              </button>
+            </div>
 
             {/* Send */}
             <Button variant="gradient" size="icon-sm" onClick={handleSubmit} disabled={loading} title="Send" className="flex-shrink-0 rounded-lg">

@@ -1,25 +1,24 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useVaultStore } from '@/stores/vault-store';
 import { useEditorStore } from '@/stores/editor-store';
 import { useGraphStore } from '@/stores/graph-store';
 import { useUIStore } from '@/stores/ui-store';
-import { useForceGraph } from './useForceGraph';
-import { NeuralNode } from './NeuralNode';
+import { useClusterLayout } from './useClusterLayout';
+import { ClusterCard } from './ClusterCard';
 import { Synapse } from './Synapse';
+import { Text } from '@react-three/drei';
 import type { GraphNode } from '@/types';
-import { useRef, useState } from 'react';
 import * as THREE from 'three';
 
-export function GraphScene({ controlsRef }: { controlsRef?: React.RefObject<any> }) {
+export function ClusterScene({ controlsRef }: { controlsRef?: React.RefObject<any> }) {
   const { graphData } = useVaultStore();
   const { openFile } = useEditorStore();
   const { hoveredNode, selectedNode, setSelectedNode, settings } = useGraphStore();
   const { setActiveFile } = useVaultStore();
-  const { getPositions, tickRef } = useForceGraph(graphData.nodes, graphData.edges);
-  const [, setRenderTick] = useState(0);
+  const { positions, categoryCenters } = useClusterLayout(graphData.nodes, graphData.edges);
   const { camera } = useThree();
   const cameraTargetPosRef = useRef<THREE.Vector3 | null>(null);
   const cameraLerpFrames = useRef(0);
@@ -66,13 +65,10 @@ export function GraphScene({ controlsRef }: { controlsRef?: React.RefObject<any>
     [openFile, setActiveFile, setSelectedNode]
   );
 
-  // Trigger re-render when force simulation updates + smooth camera animation
   useFrame(() => {
-    setRenderTick(tickRef.current);
-
     // When a node is selected, smoothly animate the camera toward it
     if (selectedNode) {
-      const pos = getPositions().get(selectedNode);
+      const pos = positions.get(selectedNode);
       if (pos) {
         const target = new THREE.Vector3(pos.x, pos.y, pos.z);
         if (!cameraTargetPosRef.current || !cameraTargetPosRef.current.equals(target)) {
@@ -91,19 +87,33 @@ export function GraphScene({ controlsRef }: { controlsRef?: React.RefObject<any>
         // Move OrbitControls target to node
         controlsRef.current.target.lerp(cameraTargetPosRef.current, eased * 0.1);
         
-        // Optionally move camera closer, but let OrbitControls handle rotation
-        const camTarget = cameraTargetPosRef.current.clone().add(new THREE.Vector3(0, 0, 40));
+        // Move camera closer for cards, but let OrbitControls handle rotation
+        const camTarget = cameraTargetPosRef.current.clone().add(new THREE.Vector3(0, 0, 50));
         camera.position.lerp(camTarget, eased * 0.05);
         controlsRef.current.update();
       }
     }
   });
 
-  const positions = getPositions();
-
   return (
     <>
-      {/* Synapses first (behind nodes) */}
+      {/* Render Category Titles in the center of their clusters */}
+      {Array.from(categoryCenters.entries()).map(([cat, center]) => (
+        <Text
+          key={`label-${cat}`}
+          position={[center.x, center.y + 60, center.z]}
+          fontSize={10}
+          color="#ffffff"
+          anchorX="center"
+          anchorY="middle"
+          outlineWidth={0.2}
+          outlineColor="#000000"
+        >
+          {cat.toUpperCase()}
+        </Text>
+      ))}
+
+      {/* Edges */}
       {graphData.edges.map((edge, i) => {
         const sPos = positions.get(edge.source);
         const tPos = positions.get(edge.target);
@@ -123,24 +133,24 @@ export function GraphScene({ controlsRef }: { controlsRef?: React.RefObject<any>
             highlighted={highlighted}
             lineThickness={settings.lineThickness}
             lineColor={settings.lineColor}
+            variant="holographic"
           />
         );
       })}
 
-      {/* Neural nodes */}
+      {/* Cards */}
       {graphData.nodes.map((node) => {
         const pos = positions.get(node.id);
         if (!pos) return null;
 
         return (
-          <NeuralNode
+          <ClusterCard
             key={node.id}
             node={node}
             position={[pos.x, pos.y, pos.z]}
             isConnected={connectedToHovered(node.id)}
             onSelect={handleSelect}
             nodeSize={settings.nodeSize}
-            showLabels={settings.showLabels}
           />
         );
       })}

@@ -6,17 +6,17 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // --- Layer 1: dense dim starfield ---
-const STAR_COUNT = 500;
-const SPREAD = 500;
+const STAR_COUNT = 8000;
+const SPREAD = 6000;
 const DRIFT_SPEED = 0.0008;
 
 // --- Layer 2: bright accent stars ---
-const BRIGHT_COUNT = 50;
-const BRIGHT_SPREAD = 500;
+const BRIGHT_COUNT = 800;
+const BRIGHT_SPREAD = 6000;
 const BRIGHT_DRIFT_SPEED = 0.0004;
 
 // --- Layer 3: shooting stars ---
-const SHOOTING_COUNT = 4;
+const SHOOTING_COUNT = 10;
 const TRAIL_LENGTH = 20;
 
 // Create a circular soft-glow texture for round stars

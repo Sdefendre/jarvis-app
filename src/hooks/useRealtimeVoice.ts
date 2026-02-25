@@ -338,6 +338,16 @@ export function useRealtimeVoice({
     }
   }, [apiKey, voice, instructions, cleanup, disconnect, setState]);
 
+  // Update session instructions when they change mid-session (e.g. vault switch)
+  useEffect(() => {
+    if (stateRef.current === 'connected' && dcRef.current?.readyState === 'open' && instructions) {
+      dcRef.current.send(JSON.stringify({
+        type: 'session.update',
+        session: { instructions },
+      }));
+    }
+  }, [instructions]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {

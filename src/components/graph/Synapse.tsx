@@ -14,6 +14,7 @@ interface SynapseProps {
   highlighted: boolean;
   lineThickness: number;
   lineColor: string;
+  variant?: 'default' | 'holographic';
 }
 
 const _start = new THREE.Vector3();
@@ -23,12 +24,36 @@ const _dir = new THREE.Vector3();
 const _up = new THREE.Vector3(0, 1, 0);
 const _quat = new THREE.Quaternion();
 
-export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighted, lineThickness, lineColor: lineColorProp }: SynapseProps) {
+export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighted, lineThickness, lineColor: lineColorProp, variant = 'default' }: SynapseProps) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const color = useMemo(() => new THREE.Color(lineColorProp), [lineColorProp]);
+  
+  // Calculate holographic color based on length if variant is holographic
+  const holoColor = useMemo(() => {
+    if (variant !== 'holographic') return new THREE.Color(lineColorProp);
+    
+    const p1 = new THREE.Vector3(...sourcePos);
+    const p2 = new THREE.Vector3(...targetPos);
+    const dist = p1.distanceTo(p2);
+    
+    // Map length (e.g. 0 to 400) to 0-1
+    const percent = Math.max(0, Math.min(1, dist / 400));
+    
+    const tmpColor = new THREE.Color();
+    if (percent < 0.5) {
+      // Short edges (inside cluster) are Cyan -> Purple
+      tmpColor.set('#06b6d4').lerp(new THREE.Color('#a855f7'), percent * 2);
+    } else {
+      // Long edges (cross cluster) are Purple -> Magenta
+      tmpColor.set('#a855f7').lerp(new THREE.Color('#d946ef'), (percent - 0.5) * 2);
+    }
+    return tmpColor;
+  }, [variant, lineColorProp, sourcePos, targetPos]);
+
+  const defaultColor = useMemo(() => new THREE.Color(lineColorProp), [lineColorProp]);
+  const color = variant === 'holographic' ? holoColor : defaultColor;
 
   const baseRadius = edge.type === 'wiki-link' ? 0.25 : edge.type === 'folder-sibling' ? 0.18 : 0.12;
-  const radius = baseRadius * lineThickness;
+  const radius = baseRadius * lineThickness * (variant === 'holographic' ? 1.5 : 1); // Make holographic slightly thicker
 
   useFrame(() => {
     if (!meshRef.current) return;
@@ -47,9 +72,12 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
     meshRef.current.quaternion.copy(_quat);
 
     const mat = meshRef.current.material as THREE.MeshBasicMaterial;
-    mat.color.set(lineColorProp);
+    if (variant !== 'holographic') {
+      mat.color.set(lineColorProp);
+    }
     mat.needsUpdate = true;
-    const targetOpacity = highlighted ? 0.8 : 0.5;
+    
+    const targetOpacity = highlighted ? 0.8 : (variant === 'holographic' ? 0.4 : 0.5);
     mat.opacity += (targetOpacity - mat.opacity) * 0.1;
   });
 
@@ -59,8 +87,9 @@ export function Synapse({ edge, sourcePos, targetPos, sourceCategory, highlighte
       <meshBasicMaterial
         color={color}
         transparent
-        opacity={0.5}
+        opacity={variant === 'holographic' ? 0.4 : 0.5}
         depthWrite={false}
+        blending={variant === 'holographic' ? THREE.AdditiveBlending : THREE.NormalBlending}
       />
     </mesh>
   );

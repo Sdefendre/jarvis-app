@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+export type ViewMode = 'galaxy' | 'terrain' | 'cluster';
+
 interface GraphSettings {
   nodeSize: number;
   showLabels: boolean;
@@ -7,15 +9,19 @@ interface GraphSettings {
   autoRotate: boolean;
   rotateSpeed: number;
   lineColor: string;
+  terrainOpacity: number;
+  terrainWireframe: boolean;
 }
 
 interface GraphState {
+  viewMode: ViewMode;
   hoveredNode: string | null;
   selectedNode: string | null;
   cameraTarget: [number, number, number] | null;
   zoomDistance: number;
   settings: GraphSettings;
 
+  setViewMode: (mode: ViewMode) => void;
   setHoveredNode: (id: string | null) => void;
   setSelectedNode: (id: string | null) => void;
   setCameraTarget: (pos: [number, number, number] | null) => void;
@@ -25,6 +31,7 @@ interface GraphState {
 }
 
 export const useGraphStore = create<GraphState>((set) => ({
+  viewMode: 'galaxy',
   hoveredNode: null,
   selectedNode: null,
   cameraTarget: null,
@@ -36,8 +43,11 @@ export const useGraphStore = create<GraphState>((set) => ({
     autoRotate: true,
     rotateSpeed: 0.15,
     lineColor: '#27272a',
+    terrainOpacity: 0.12,
+    terrainWireframe: true,
   },
 
+  setViewMode: (mode) => set({ viewMode: mode }),
   setHoveredNode: (id) => set({ hoveredNode: id }),
   setSelectedNode: (id) => set({ selectedNode: id }),
   setCameraTarget: (pos) => set({ cameraTarget: pos }),

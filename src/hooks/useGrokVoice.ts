@@ -411,6 +411,16 @@ export function useGrokVoice({
     }
   }, [apiKey, voice, instructions, cleanup, disconnect, setState]);
 
+  // Update session instructions when they change mid-session (e.g. vault switch)
+  useEffect(() => {
+    if (stateRef.current === 'connected' && wsRef.current?.readyState === WebSocket.OPEN && instructions) {
+      wsRef.current.send(JSON.stringify({
+        type: 'session.update',
+        session: { instructions: instructions },
+      }));
+    }
+  }, [instructions]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
