@@ -19,7 +19,6 @@ export function TerrainScene({ controlsRef }: { controlsRef?: React.RefObject<an
   const { selectedNode, setSelectedNode, settings } = useGraphStore();
   const { setActiveFile } = useVaultStore();
   const { getPositions, config } = useTerrainLayout(graphData.nodes, graphData.edges);
-  const { camera } = useThree();
   const cameraTargetPosRef = useRef<THREE.Vector3 | null>(null);
   const cameraLerpFrames = useRef(0);
 
@@ -35,7 +34,8 @@ export function TerrainScene({ controlsRef }: { controlsRef?: React.RefObject<an
   );
 
   // Smooth camera animation toward selected node (elevated view offset)
-  useFrame(() => {
+  useFrame((state) => {
+    const { camera } = state;
     if (selectedNode) {
       const pos = getPositions().get(selectedNode);
       if (pos) {
