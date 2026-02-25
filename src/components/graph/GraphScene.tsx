@@ -5,6 +5,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useVaultStore } from '@/stores/vault-store';
 import { useEditorStore } from '@/stores/editor-store';
 import { useGraphStore } from '@/stores/graph-store';
+import { useUIStore } from '@/stores/ui-store';
 import { useForceGraph } from './useForceGraph';
 import { NeuralNode } from './NeuralNode';
 import { Synapse } from './Synapse';
@@ -58,6 +59,9 @@ export function GraphScene() {
       setActiveFile(node.path);
       openFile(node.path);
       setSelectedNode(node.id);
+      // Expand notes panel if collapsed so the selected note is visible
+      const { editorCollapsed, setEditorCollapsed } = useUIStore.getState();
+      if (editorCollapsed) setEditorCollapsed(false);
     },
     [openFile, setActiveFile, setSelectedNode]
   );

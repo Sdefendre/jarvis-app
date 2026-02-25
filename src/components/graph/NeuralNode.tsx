@@ -83,9 +83,9 @@ export function NeuralNode({ node, position, isConnected, onSelect, nodeSize, sh
           setHoveredNode(null);
           document.body.style.cursor = '';
         }}
-        onClick={(e) => {
+        onPointerDown={(e) => {
           e.stopPropagation();
-          onSelect(node);
+          if (e.button === 0) onSelect(node);
         }}
       >
         <sphereGeometry args={[radius, 32, 32]} />
