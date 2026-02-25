@@ -207,10 +207,23 @@ export function SettingsPanel() {
   const { settings, loadSettings, updateSettings, setApiKey, toggleModel } = useSettingsStore();
   const [activeSection, setActiveSection] = useState<Section>('ai');
   const [vaultPath, setVaultPath] = useState<string>('');
+  const [apiKeysSavedAt, setApiKeysSavedAt] = useState<number | null>(null);
 
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
+
+  // Clear "Saved" indicator after 2 seconds
+  useEffect(() => {
+    if (apiKeysSavedAt == null) return;
+    const t = setTimeout(() => setApiKeysSavedAt(null), 2000);
+    return () => clearTimeout(t);
+  }, [apiKeysSavedAt]);
+
+  const handleSetApiKey = (provider: keyof typeof settings.apiKeys, key: string) => {
+    setApiKey(provider, key);
+    setApiKeysSavedAt(Date.now());
+  };
 
   // Close on Escape key
   useEffect(() => {
@@ -317,27 +330,32 @@ export function SettingsPanel() {
               <>
                 {/* API Keys */}
                 <div>
-                  <SectionHeader>API Keys</SectionHeader>
+                  <div className="flex items-center gap-3 mb-4">
+                    <SectionHeader>API Keys</SectionHeader>
+                    {apiKeysSavedAt != null && (
+                      <span className="text-xs text-emerald-400 font-medium">Saved</span>
+                    )}
+                  </div>
                   <div className="space-y-4">
                     <ApiKeyInput
                       label="Anthropic"
                       value={settings.apiKeys.anthropic}
-                      onChange={(v) => setApiKey('anthropic', v)}
+                      onChange={(v) => handleSetApiKey('anthropic', v)}
                     />
                     <ApiKeyInput
                       label="OpenAI"
                       value={settings.apiKeys.openai}
-                      onChange={(v) => setApiKey('openai', v)}
+                      onChange={(v) => handleSetApiKey('openai', v)}
                     />
                     <ApiKeyInput
                       label="Google"
                       value={settings.apiKeys.google}
-                      onChange={(v) => setApiKey('google', v)}
+                      onChange={(v) => handleSetApiKey('google', v)}
                     />
                     <ApiKeyInput
                       label="xAI"
                       value={settings.apiKeys.xai}
-                      onChange={(v) => setApiKey('xai', v)}
+                      onChange={(v) => handleSetApiKey('xai', v)}
                     />
                   </div>
                 </div>
