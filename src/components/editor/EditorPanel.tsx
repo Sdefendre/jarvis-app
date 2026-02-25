@@ -76,7 +76,7 @@ export function EditorPanel() {
     return (
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 pt-12 pb-2 relative z-[60] titlebar-drag" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between pl-3 pr-8 pt-12 pb-2 relative z-[60] titlebar-drag" style={{ borderBottom: '1px solid var(--border)' }}>
           <span className="text-sm text-muted-foreground">Notes</span>
           <div className="flex items-center gap-0.5">
             {!chatOpen && (
@@ -176,7 +176,7 @@ export function EditorPanel() {
 
       {/* Breadcrumb + collapse + theme toggle */}
       <div
-        className="flex items-center justify-between px-5 py-2 gap-2 relative z-[60] titlebar-drag"
+        className="flex items-center justify-between pl-5 pr-8 py-2 gap-2 relative z-[60] titlebar-drag"
         style={{ borderBottom: `1px solid ${editorBorder}` }}
       >
         <div className="flex items-center gap-2 min-w-0">
