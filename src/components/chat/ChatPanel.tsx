@@ -59,10 +59,25 @@ const MODEL_LABELS: Record<string, string> = {
   'gemini-2.5-pro': 'Gemini 2.5 Pro',
 };
 
-function buildSystemPrompt(provider: string, model: string, customPrompt: string): string {
+function buildCurrentNoteContext(activeTab: { path: string; name: string; content: string } | null): string {
+  if (!activeTab) return '';
+  const maxLen = 4000;
+  const content = activeTab.content.length > maxLen
+    ? activeTab.content.slice(0, maxLen) + '\n\n[... content truncated ...]'
+    : activeTab.content;
+  return `\n\nThe user is currently viewing this note:\n- Path: ${activeTab.path}\n- Title: ${activeTab.name}\n\nContent:\n${content}`;
+}
+
+function buildSystemPrompt(
+  provider: string,
+  model: string,
+  customPrompt: string,
+  currentNoteContext?: string
+): string {
   const displayName = MODEL_LABELS[model] || model;
   const base = `You are TracesAI, an AI assistant embedded in a knowledge management app called Traces. You are currently running as ${displayName} (model ID: ${model}) from ${provider}. If the user asks what model you are, tell them you are ${displayName}. You can read, write, edit, search, and delete files in the user's vault. Use tools to help the user manage their notes and knowledge base. Always be helpful and proactive.`;
-  return customPrompt ? `${customPrompt}\n\n${base}` : base;
+  const withCustom = customPrompt ? `${customPrompt}\n\n${base}` : base;
+  return currentNoteContext ? `${withCustom}${currentNoteContext}` : withCustom;
 }
 
 // File-modifying tools that should trigger a refresh
@@ -175,7 +190,7 @@ function ToolCallCard({ toolCall }: { toolCall: ToolCall }) {
 export function ChatPanel() {
   const { toggleChat } = useUIStore();
   const { refreshFiles, vaultName, files } = useVaultStore();
-  const { reloadTab } = useEditorStore();
+  const { reloadTab, getActiveTab } = useEditorStore();
   const { settings: appSettings, updateSettings } = useSettingsStore();
 
   // Chat state
@@ -276,8 +291,12 @@ You also have voice tools: list_voices (to show available voices) and change_voi
 The user's current vault is called "${vaultName}" and contains ${files.length} note${files.length === 1 ? '' : 's'}.
 
 The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })}.`;
+    const activeTab = getActiveTab();
+    const noteContext = activeTab
+      ? `\n\nThe user is currently viewing this note: "${activeTab.name}" (path: ${activeTab.path}). Content preview:\n${activeTab.content.slice(0, 2500)}${activeTab.content.length > 2500 ? '\n[... truncated ...]' : ''}`
+      : '';
     const custom = appSettings.customSystemPrompt?.trim();
-    return custom ? `${custom}\n\n${base}` : base;
+    return (custom ? `${custom}\n\n${base}` : base) + noteContext;
   })();
 
   // Custom tool executor: handle voice tools in renderer (for correct provider + settings sync), delegate rest to main process
@@ -366,8 +385,10 @@ The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'lo
   const enabledGoogleModels = appSettings.enabledModels.google;
   const enabledXaiModels = appSettings.enabledModels.xai;
 
-  // System prompt — includes current model info + custom prompt
-  const systemPrompt = buildSystemPrompt(provider, model, appSettings.customSystemPrompt);
+  // System prompt — includes current model info + custom prompt + current note context
+  const activeTab = getActiveTab();
+  const currentNoteContext = activeTab ? buildCurrentNoteContext(activeTab) : '';
+  const systemPrompt = buildSystemPrompt(provider, model, appSettings.customSystemPrompt ?? '', currentNoteContext);
 
   // Get API key for current provider from settings
   const getApiKey = useCallback(
