@@ -1,6 +1,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 
+/** Directories to ignore when walking the vault. */
+export const IGNORE_DIRS = ['Google-Drive', 'node_modules'];
+
 let vaultRoot = '';
 
 export function setVaultRoot(root: string) {
@@ -26,8 +29,7 @@ export async function listFiles(): Promise<string[]> {
   async function walk(dir: string) {
     const entries = await fs.readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
-      // Skip hidden files, Google Drive sync, and node_modules
-      if (entry.name.startsWith('.') || entry.name === 'Google-Drive' || entry.name === 'node_modules') {
+      if (entry.name.startsWith('.') || IGNORE_DIRS.includes(entry.name)) {
         continue;
       }
       const fullPath = path.join(dir, entry.name);

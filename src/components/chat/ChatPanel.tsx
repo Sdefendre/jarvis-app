@@ -5,6 +5,7 @@ import { useUIStore } from '@/stores/ui-store';
 import { useVaultStore } from '@/stores/vault-store';
 import { useEditorStore } from '@/stores/editor-store';
 import { useSettingsStore } from '@/stores/settings-store';
+import { electronAPI } from '@/lib/electron-api';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Send, ChevronLeft, ChevronRight, Eraser, Mic, MicOff, PhoneOff } from 'lucide-react';
@@ -411,34 +412,16 @@ The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'lo
     setError(null);
 
     try {
-      // Pass API key from settings store if available
       const apiKey = getApiKey(provider);
 
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-          provider,
-          model,
-          systemPrompt,
-          ...(apiKey ? { apiKey } : {}),
-        }),
+      const data = await electronAPI.chat({
+        messages: [...messages, userMessage],
+        provider,
+        model,
+        systemPrompt,
+        ...(apiKey ? { apiKey } : {}),
       });
 
-      if (res.status === 503) {
-        const data = await res.json();
-        setError(data.error || 'API key not configured. Add it in Settings > AI & Models');
-        setLoading(false);
-        return;
-      }
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || `Request failed (${res.status})`);
-      }
-
-      const data = await res.json();
       const toolCalls = data.toolCalls || [];
       setMessages((prev) => [
         ...prev,
@@ -594,24 +577,24 @@ The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'lo
       </div>
 
       {/* Input area */}
-      <div className="px-4 py-4" style={{ borderTop: '1px solid var(--border)' }}>
+      <div className="px-4 pb-6 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
         {voiceMode ? (
           /* ── Voice call UI ── */
           <div
-            className="flex items-center gap-3 rounded-xl px-4 py-3"
+            className="flex items-center gap-4 rounded-2xl px-5 py-4 shadow-lg"
             style={{
-              backgroundColor: 'rgba(35,131,226,0.06)',
-              border: '1px solid rgba(35,131,226,0.15)',
+              backgroundColor: 'rgba(35,131,226,0.08)',
+              border: '1px solid rgba(35,131,226,0.2)',
             }}
           >
             {/* Waveform + status */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
               <VoiceWaveform audioLevel={audioLevel} />
               <div className="flex flex-col min-w-0">
-                <span className="text-xs font-medium" style={{ color: voiceState === 'connected' ? '#2383e2' : 'var(--text-secondary)' }}>
+                <span className="text-sm font-semibold" style={{ color: voiceState === 'connected' ? '#2383e2' : 'var(--text-secondary)' }}>
                   {voiceState === 'connecting' ? 'Connecting...' : voiceState === 'connected' ? 'Listening...' : 'Voice mode'}
                 </span>
-                <span className="text-[10px] text-muted-foreground">{voiceProvider === 'grok' ? 'grok' : 'gpt-realtime'}</span>
+                <span className="text-[11px] text-muted-foreground uppercase tracking-wider">{voiceProvider === 'grok' ? 'grok' : 'gpt-realtime'}</span>
               </div>
             </div>
 
@@ -619,40 +602,40 @@ The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'lo
             <button
               onClick={toggleVoice}
               title="End call"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white transition-all hover:brightness-110"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] hover:brightness-110"
               style={{
                 background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+                boxShadow: '0 4px 12px rgba(239,68,68,0.3)',
               }}
             >
-              <PhoneOff className="size-3" />
-              End
+              <PhoneOff className="size-3.5" />
+              End Session
             </button>
           </div>
         ) : (
           /* ── Text input UI ── */
           <div
-            className="flex items-center gap-2 rounded-xl px-3 py-2 transition-shadow focus-within:ring-2 focus-within:ring-[rgba(35,131,226,0.2)] focus-within:border-white/15"
+            className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200 focus-within:ring-4 focus-within:ring-[rgba(35,131,226,0.15)] focus-within:border-white/20 shadow-sm"
             style={{
-              backgroundColor: 'rgba(255,255,255,0.04)',
+              backgroundColor: 'rgba(255,255,255,0.05)',
               border: '1px solid var(--border)',
             }}
           >
             {/* Model picker */}
-            <div className="flex items-center gap-1.5 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
               {ollamaRunning && (
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" title="Ollama is running" />
+                <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" title="Ollama is active" />
               )}
               <select
                 value={selectValue}
                 onChange={handleModelChange}
-                className="text-xs rounded-md px-2 py-1.5 appearance-none cursor-pointer bg-white/[0.06] border border-white/[0.08] text-muted-foreground outline-none hover:bg-white/[0.1] hover:text-foreground transition-colors"
+                className="text-xs font-medium rounded-lg px-3 py-2 appearance-none cursor-pointer bg-white/[0.08] border border-white/[0.1] text-foreground outline-none hover:bg-white/[0.12] transition-all"
                 style={{
                   backgroundImage:
-                    'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'10\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23a1a1aa\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
+                    'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'10\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23ffffff\' d=\'M6 8L1 3h10z\'/%3E%3C/svg%3E")',
                   backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 6px center',
-                  paddingRight: 22,
+                  backgroundPosition: 'right 8px center',
+                  paddingRight: 26,
                 }}
               >
                 {ollamaModels.length > 0 && (
@@ -694,7 +677,7 @@ The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'lo
             </div>
 
             {/* Divider */}
-            <div className="w-px h-5 bg-white/[0.08] flex-shrink-0" />
+            <div className="w-px h-6 bg-white/[0.1] flex-shrink-0" />
 
             {/* Text input */}
             <input
@@ -702,34 +685,41 @@ The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'lo
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-              placeholder="Chat with your Traces..."
-              className="flex-1 min-w-0 bg-transparent text-sm placeholder:text-gray-500 focus:outline-none"
+              placeholder="Message your Traces..."
+              className="flex-1 min-w-0 bg-transparent text-[14px] placeholder:text-muted-foreground/60 focus:outline-none"
               style={{ color: 'var(--text)' }}
             />
 
             {/* Voice provider toggle + mic */}
-            <div className="flex items-center gap-0.5 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0 bg-white/[0.06] rounded-xl p-1 border border-white/[0.05]">
               <button
                 onClick={() => setVoiceProvider(voiceProvider === 'openai' ? 'grok' : 'openai')}
                 title={`Voice: ${voiceProvider === 'openai' ? 'OpenAI' : 'Grok'} (click to switch)`}
-                className="flex items-center justify-center h-7 px-1.5 rounded-l-lg text-[10px] font-medium transition-colors hover:bg-white/[0.1]"
-                style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)' }}
+                className="flex items-center justify-center h-8 px-2.5 rounded-lg text-[10px] font-bold transition-all hover:bg-white/[0.1] active:bg-white/[0.15]"
+                style={{ color: voiceProvider === 'openai' ? '#2383e2' : 'var(--text-secondary)' }}
               >
                 {voiceProvider === 'openai' ? 'GPT' : 'Grok'}
               </button>
+              <div className="w-px h-3 bg-white/[0.1]" />
               <button
                 onClick={toggleVoice}
                 title="Start voice conversation"
-                className="flex items-center justify-center size-7 rounded-r-lg transition-colors hover:bg-white/[0.1]"
-                style={{ background: 'rgba(255,255,255,0.06)' }}
+                className="flex items-center justify-center size-8 rounded-lg transition-all hover:bg-white/[0.1] active:bg-white/[0.15] hover:text-white"
               >
-                <Mic className="size-3.5 text-muted-foreground" />
+                <Mic className="size-4 text-muted-foreground" />
               </button>
             </div>
 
             {/* Send */}
-            <Button variant="gradient" size="icon-sm" onClick={handleSubmit} disabled={loading} title="Send" className="flex-shrink-0 rounded-lg">
-              <Send className="size-3.5" />
+            <Button 
+              variant="gradient" 
+              size="icon-md" 
+              onClick={handleSubmit} 
+              disabled={loading || !input.trim()} 
+              title="Send message" 
+              className="flex-shrink-0 rounded-xl shadow-md transition-transform active:scale-95"
+            >
+              <Send className="size-4" />
             </Button>
           </div>
         )}

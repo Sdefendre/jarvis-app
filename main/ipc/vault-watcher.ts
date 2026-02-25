@@ -1,6 +1,6 @@
 import { BrowserWindow } from 'electron';
 import { watch, FSWatcher } from 'chokidar';
-import { listFiles } from './file-system';
+import { listFiles, IGNORE_DIRS } from './file-system';
 import { parseVault } from './vault-parser';
 
 let watcher: FSWatcher | null = null;
@@ -12,8 +12,7 @@ export function startVaultWatcher(
   watcher = watch(vaultRoot, {
     ignored: [
       /(^|[\/\\])\./,            // dotfiles
-      /Google-Drive/,            // Google Drive sync folder
-      /node_modules/,
+      ...IGNORE_DIRS.map((d) => new RegExp(d)),
     ],
     persistent: true,
     ignoreInitial: true,

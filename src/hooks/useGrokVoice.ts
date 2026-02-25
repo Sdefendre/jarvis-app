@@ -395,8 +395,6 @@ export function useGrokVoice({
                   args = {};
                 }
 
-                console.log('[grok-voice] tool call:', toolName, args);
-
                 let result: string;
                 try {
                   result = await electronAPI.executeRealtimeTool({ toolName, args });

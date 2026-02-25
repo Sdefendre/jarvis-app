@@ -13,6 +13,7 @@ import { EditorPanel } from '@/components/editor/EditorPanel';
 import { ChatPanel } from '@/components/chat/ChatPanel';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { Button } from '@/components/ui/button';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ChevronRight, ChevronLeft, Minus, Plus, Maximize, X, Settings } from 'lucide-react';
 
 export function AppShell() {
@@ -205,7 +206,9 @@ export function AppShell() {
     return (
       <div className="fixed inset-0 z-[100]">
         <div className="fixed top-0 left-0 right-0 h-8 titlebar-drag z-[110]" />
-        <KnowledgeGraph />
+        <ErrorBoundary>
+          <KnowledgeGraph />
+        </ErrorBoundary>
         <ViewToggle />
         <div className="fixed top-12 right-3 z-[120] flex gap-1 rounded-xl px-2 py-1.5 glass">
           <Button variant="ghost" size="icon-xs" onClick={toggleGraphFullscreen} title="Exit fullscreen" className="titlebar-no-drag">
@@ -303,7 +306,11 @@ export function AppShell() {
           pointerEvents: graphCollapsed ? 'none' : 'auto',
         }}
       >
-        {!settingsOpen && <KnowledgeGraph />}
+        {!settingsOpen && (
+          <ErrorBoundary>
+            <KnowledgeGraph />
+          </ErrorBoundary>
+        )}
 
         {!graphCollapsed && !settingsOpen && <ViewToggle />}
 
@@ -384,7 +391,9 @@ export function AppShell() {
             borderLeft: '1px solid var(--glass-border)',
           }}
         >
-          <ChatPanel />
+          <ErrorBoundary>
+            <ChatPanel />
+          </ErrorBoundary>
         </div>
       )}
 

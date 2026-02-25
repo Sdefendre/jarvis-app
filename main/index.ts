@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, screen } from 'electron';
 import path from 'path';
+import fs from 'node:fs';
 import { registerIpcHandlers } from './ipc/handlers';
 import { setVaultRoot } from './ipc/file-system';
 import { startVaultWatcher, stopVaultWatcher } from './ipc/vault-watcher';
@@ -9,6 +10,9 @@ let vaultPath = path.join(
   'Desktop',
   'Traces Notes'
 );
+
+// Ensure default vault directory exists so first boot doesn't crash
+fs.mkdirSync(vaultPath, { recursive: true });
 
 let mainWindow: BrowserWindow | null = null;
 

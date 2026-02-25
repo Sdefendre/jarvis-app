@@ -8,6 +8,7 @@
     "build:next": "BUILD_STATIC=1 next build",
     "build:electron": "tsc -p tsconfig.electron.json",
     "build": "pnpm build:next && pnpm build:electron",
+    "dist": "pnpm build && electron-builder",
     "start": "electron .",
     "postinstall": "electron-builder install-app-deps"
   },

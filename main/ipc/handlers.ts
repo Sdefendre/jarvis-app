@@ -13,6 +13,7 @@ import {
 } from './file-system';
 import { parseVault } from './vault-parser';
 import { REALTIME_TOOLS } from './realtime-tools';
+import { handleChat } from './chat-handler';
 
 function getSettingsPath(): string {
   return path.join(app.getPath('userData'), 'settings.json');
@@ -73,8 +74,8 @@ export function registerIpcHandlers(vaultRoot: string) {
       _event,
       opts: { apiKey: string; voice?: string; instructions?: string }
     ) => {
-      const key = (opts.apiKey && opts.apiKey.trim()) || process.env.OPENAI_API_KEY;
-      if (!key) throw new Error('OpenAI API key is required for voice mode');
+      const key = opts.apiKey && opts.apiKey.trim();
+      if (!key) throw new Error('OpenAI API key is required for voice mode. Add it in Settings > AI & Models.');
       const sessionConfig = {
         session: {
           type: 'realtime',
@@ -112,8 +113,8 @@ export function registerIpcHandlers(vaultRoot: string) {
   ipcMain.handle(
     'realtime:createGrokSession',
     async (_event, opts: { apiKey: string }) => {
-      const key = (opts.apiKey && opts.apiKey.trim()) || process.env.XAI_API_KEY;
-      if (!key) throw new Error('xAI API key is required for Grok voice mode');
+      const key = opts.apiKey && opts.apiKey.trim();
+      if (!key) throw new Error('xAI API key is required for Grok voice mode. Add it in Settings > AI & Models.');
       const res = await fetch('https://api.x.ai/v1/realtime/client_secrets', {
         method: 'POST',
         headers: {
@@ -181,4 +182,8 @@ export function registerIpcHandlers(vaultRoot: string) {
       }
     }
   );
+
+  ipcMain.handle('chat:send', async (_event, opts) => {
+    return handleChat(opts);
+  });
 }

@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   executeRealtimeTool: (opts: { toolName: string; args: Record<string, string> }) =>
     ipcRenderer.invoke('realtime:executeTool', opts),
 
+  chat: (opts: { messages: unknown[]; provider: string; model: string; apiKey?: string; systemPrompt?: string }) =>
+    ipcRenderer.invoke('chat:send', opts),
+
   onFileChange: (callback: (event: string, filePath: string) => void) => {
     const handler = (_: Electron.IpcRendererEvent, event: string, filePath: string) =>
       callback(event, filePath);

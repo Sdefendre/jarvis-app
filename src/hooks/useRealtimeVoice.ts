@@ -221,9 +221,7 @@ export function useRealtimeVoice({
         console.warn('[voice] data channel error:', msg);
       };
 
-      dc.onopen = () => {
-        console.log('[voice] data channel open');
-      };
+      dc.onopen = () => {};
 
       dc.onmessage = (e) => {
         (async () => {
@@ -266,8 +264,6 @@ export function useRealtimeVoice({
                 } catch {
                   args = {};
                 }
-
-                console.log('[voice] tool call:', toolName, args);
 
                 let result: string;
                 try {

@@ -9,6 +9,19 @@ export interface GrokSessionResult {
   clientSecret: string;
 }
 
+export interface ChatRequest {
+  messages: { role: string; content: string }[];
+  provider: string;
+  model: string;
+  apiKey?: string;
+  systemPrompt?: string;
+}
+
+export interface ChatResult {
+  message: string;
+  toolCalls: { name: string; args: Record<string, string>; result: string }[];
+}
+
 export interface ElectronAPI {
   getVaultPath: () => Promise<string>;
   listFiles: () => Promise<string[]>;
@@ -21,6 +34,7 @@ export interface ElectronAPI {
   openFolder: () => Promise<string | null>;
   loadSettings: () => Promise<Record<string, unknown>>;
   saveSettings: (data: Record<string, unknown>) => Promise<void>;
+  chat: (opts: ChatRequest) => Promise<ChatResult>;
   createRealtimeSession: (opts: { apiKey: string; voice?: string; instructions?: string }) => Promise<RealtimeSessionResult>;
   createGrokSession: (opts: { apiKey: string }) => Promise<GrokSessionResult>;
   executeRealtimeTool: (opts: { toolName: string; args: Record<string, string> }) => Promise<string>;
@@ -102,71 +116,77 @@ export const electronAPI = {
     return api.saveSettings(data);
   },
 
-  async createRealtimeSession(opts: { apiKey: string; voice?: string; instructions?: string }): Promise<RealtimeSessionResult> {
-    // Always use the API route — it has access to .env.local (OPENAI_API_KEY).
-    // Falls back to IPC only if the fetch fails (e.g. production static export).
-    try {
-      const res = await fetch('/api/realtime/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(opts),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Realtime session error (${res.status}): ${text}`);
-      }
-      return await res.json();
-    } catch (fetchErr) {
-      // If API route is unavailable (production), try IPC
-      const api = getAPI();
-      if (api) {
-        return api.createRealtimeSession(opts);
-      }
-      throw fetchErr;
+  async chat(opts: ChatRequest): Promise<ChatResult> {
+    // IPC-first (works in both dev and production)
+    const api = getAPI();
+    if (api && typeof api.chat === 'function') {
+      return api.chat(opts);
     }
+    // Fallback to API route (dev only)
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(opts),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || `Request failed (${res.status})`);
+    }
+    return res.json();
+  },
+
+  async createRealtimeSession(opts: { apiKey: string; voice?: string; instructions?: string }): Promise<RealtimeSessionResult> {
+    // IPC-first (works in both dev and production)
+    const api = getAPI();
+    if (api) {
+      return api.createRealtimeSession(opts);
+    }
+    // Fallback to API route (dev without Electron)
+    const res = await fetch('/api/realtime/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(opts),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Realtime session error (${res.status}): ${text}`);
+    }
+    return await res.json();
   },
 
   async createGrokSession(opts: { apiKey: string }): Promise<GrokSessionResult> {
-    try {
-      const res = await fetch('/api/realtime/grok-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(opts),
-      });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Grok session error (${res.status}): ${text}`);
-      }
-      return await res.json();
-    } catch (fetchErr) {
-      const api = getAPI();
-      if (api) {
-        return api.createGrokSession(opts);
-      }
-      throw fetchErr;
+    const api = getAPI();
+    if (api) {
+      return api.createGrokSession(opts);
     }
+    const res = await fetch('/api/realtime/grok-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(opts),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Grok session error (${res.status}): ${text}`);
+    }
+    return await res.json();
   },
 
   async executeRealtimeTool(opts: { toolName: string; args: Record<string, string> }): Promise<string> {
-    try {
-      const res = await fetch('/api/realtime/tool', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(opts),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || `Tool execution failed (${res.status})`);
-      }
-      const data = await res.json();
-      return data.result;
-    } catch (fetchErr) {
-      const api = getAPI();
-      if (api) {
-        return api.executeRealtimeTool(opts);
-      }
-      throw fetchErr;
+    const api = getAPI();
+    if (api) {
+      return api.executeRealtimeTool(opts);
     }
+    const res = await fetch('/api/realtime/tool', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(opts),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || `Tool execution failed (${res.status})`);
+    }
+    const data = await res.json();
+    return data.result;
   },
 
   onFileChange(callback: (event: string, filePath: string) => void): () => void {
