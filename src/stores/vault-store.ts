@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { GraphData, GraphNode, GraphEdge } from '@/types';
 import { electronAPI } from '@/lib/electron-api';
+import { useEditorStore } from '@/stores/editor-store';
 
 interface VaultState {
   files: string[];
@@ -49,6 +50,8 @@ export const useVaultStore = create<VaultState>((set, get) => ({
   openFolder: async () => {
     const selectedPath = await electronAPI.openFolder();
     if (selectedPath) {
+      // Clear editor tabs so notes from the previous folder don't remain
+      useEditorStore.getState().clearTabs();
       // Extract the folder name from the full path
       const folderName = selectedPath.split('/').pop() || selectedPath;
       set({ vaultName: folderName, activeFile: null });

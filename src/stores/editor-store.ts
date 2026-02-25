@@ -8,6 +8,7 @@ interface EditorState {
 
   openFile: (path: string) => Promise<void>;
   closeTab: (id: string) => void;
+  clearTabs: () => void;
   setTabContent: (id: string, content: string) => void;
   markClean: (id: string) => void;
   saveTab: (id: string) => Promise<void>;
@@ -60,6 +61,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
       return { tabs, activeTabId };
     });
+  },
+
+  clearTabs: () => {
+    set({ tabs: [], activeTabId: null });
   },
 
   setTabContent: (id, content) => {
