@@ -130,14 +130,15 @@ export function FileTree() {
           <span className="text-sm font-bold truncate" style={{ color: 'var(--text)' }}>
             {vaultName}
           </span>
-          <div className="flex items-center gap-0.5 shrink-0">
-            <Button variant="ghost" size="icon-xs" onClick={toggleSidebar} title="Collapse sidebar" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
+          <div className="flex items-center gap-0.5 shrink-0 rounded-xl px-1.5 py-1 glass titlebar-no-drag">
+            <Button variant="ghost" size="icon-sm" onClick={toggleSidebar} title="Collapse sidebar" className="text-muted-foreground hover:text-foreground transition-colors">
               <ChevronLeft className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon-xs" onClick={openFolder} title="Open Folder" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
+            <div className="w-px h-4 bg-white/10 mx-0.5" />
+            <Button variant="ghost" size="icon-sm" onClick={openFolder} title="Open Folder" className="text-muted-foreground hover:text-foreground transition-colors">
               <FolderOpen className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon-xs" onClick={() => setCreating(true)} title="New Note" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon-sm" onClick={() => setCreating(true)} title="New Note" className="text-muted-foreground hover:text-foreground transition-colors">
               <Plus className="size-3.5" />
             </Button>
           </div>

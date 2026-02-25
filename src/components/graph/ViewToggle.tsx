@@ -15,7 +15,7 @@ export function ViewToggle() {
   ];
 
   return (
-    <div className="absolute top-10 left-3 z-30 flex items-center gap-0.5 rounded-xl px-1.5 py-1 glass titlebar-no-drag">
+    <div className="absolute top-12 left-3 z-30 flex items-center gap-0.5 rounded-xl px-1.5 py-1 glass titlebar-no-drag">
       {modes.map((m) => {
         const active = viewMode === m.id;
         const Icon = m.icon;
