@@ -78,16 +78,17 @@ export function EditorPanel() {
         {/* Header */}
         <div className="flex items-center justify-end pl-3 pr-8 pt-12 pb-2 relative z-[60] titlebar-drag" style={{ borderBottom: '1px solid var(--border)' }}>
           <span className="text-sm text-muted-foreground absolute left-1/2 -translate-x-1/2 font-medium">Notes</span>
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 glass titlebar-no-drag">
             {!chatOpen && (
-              <Button variant="ghost" size="icon-xs" onClick={() => setChatOpen(true)} title="Open AI Chat" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon-sm" onClick={() => setChatOpen(true)} title="Open AI Chat" className="text-muted-foreground hover:text-foreground transition-colors">
                 <MessageCircle className="size-3.5" />
               </Button>
             )}
-            <Button variant="ghost" size="icon-xs" onClick={() => setCreating(true)} title="New note" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="icon-sm" onClick={() => setCreating(true)} title="New note" className="text-muted-foreground hover:text-foreground transition-colors">
               <Plus className="size-3.5" />
             </Button>
-            <Button variant="ghost" size="icon-xs" onClick={toggleEditorCollapsed} title="Collapse notes" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
+            <div className="w-px h-4 bg-white/10 mx-0.5" />
+            <Button variant="ghost" size="icon-sm" onClick={toggleEditorCollapsed} title="Collapse notes" className="text-muted-foreground hover:text-foreground transition-colors">
               <ChevronLeft className="size-3.5" />
             </Button>
           </div>
@@ -176,58 +177,51 @@ export function EditorPanel() {
 
       {/* Breadcrumb + collapse + theme toggle */}
       <div
-        className="flex items-center justify-between pl-5 pr-8 py-2 gap-2 relative z-[60] titlebar-drag"
+        className="flex items-center justify-end pl-5 pr-8 py-2 gap-2 relative z-[60] titlebar-drag"
         style={{ borderBottom: `1px solid ${editorBorder}` }}
       >
-        <div className="flex items-center gap-2 min-w-0">
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            onClick={toggleEditorCollapsed}
-            title="Collapse notes"
-            className="titlebar-no-drag flex-shrink-0 text-muted-foreground hover:text-foreground"
-          >
-            <ChevronLeft className="size-3.5" />
-          </Button>
-        </div>
         <span className="text-sm truncate absolute left-1/2 -translate-x-1/2 font-medium max-w-[40%] text-center" style={{ color: editorSecondary }}>
           {activeTab.path.replace(/\//g, ' / ')}
         </span>
-        <div className="flex items-center gap-1.5 titlebar-no-drag">
+        <div className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 glass titlebar-no-drag">
           {!chatOpen && (
             <Button
-              variant="outline"
-              size="xs"
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setChatOpen(true)}
               title="Open AI Chat"
-              style={{ borderColor: editorBorder, color: editorSecondary }}
-              className="gap-1"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              <MessageCircle className="size-3" />
-              Chat
+              <MessageCircle className="size-3.5" />
             </Button>
           )}
           <Button
-            variant="outline"
-            size="xs"
+            variant="ghost"
+            size="icon-sm"
             onClick={togglePreview}
             title={previewMode ? 'Switch to editor' : 'Switch to preview'}
-            style={{ borderColor: editorBorder, color: editorSecondary }}
-            className="gap-1"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            {previewMode ? <EyeOff className="size-3" /> : <Eye className="size-3" />}
-            {previewMode ? 'Edit' : 'Preview'}
+            {previewMode ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
           </Button>
           <Button
-            variant="outline"
-            size="xs"
+            variant="ghost"
+            size="icon-sm"
             onClick={toggleEditorTheme}
             title={editorLightMode ? 'Switch to dark editor' : 'Switch to light editor'}
-            style={{ borderColor: editorBorder, color: editorSecondary }}
-            className="gap-1"
+            className="text-muted-foreground hover:text-foreground transition-colors"
           >
-            {editorLightMode ? <Moon className="size-3" /> : <Sun className="size-3" />}
-            {editorLightMode ? 'Dark' : 'Light'}
+            {editorLightMode ? <Moon className="size-3.5" /> : <Sun className="size-3.5" />}
+          </Button>
+          <div className="w-px h-4 bg-white/10 mx-0.5" />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggleEditorCollapsed}
+            title="Collapse notes"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="size-3.5" />
           </Button>
         </div>
       </div>

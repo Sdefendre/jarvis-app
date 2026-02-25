@@ -482,13 +482,16 @@ The current date and time is ${new Date().toLocaleString('en-US', { weekday: 'lo
         style={{ borderBottom: '1px solid var(--border)' }}
       >
         <span className="text-sm text-muted-foreground absolute left-1/2 -translate-x-1/2 font-medium">Chat</span>
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 rounded-xl px-1.5 py-1 glass titlebar-no-drag">
           {messages.length > 0 && (
-            <Button variant="ghost" size="icon-xs" onClick={clearChat} title="Clear chat" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
-              <Eraser className="size-3" />
-            </Button>
+            <>
+              <Button variant="ghost" size="icon-sm" onClick={clearChat} title="Clear chat" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Eraser className="size-3.5" />
+              </Button>
+              <div className="w-px h-4 bg-white/10 mx-0.5" />
+            </>
           )}
-          <Button variant="ghost" size="icon-xs" onClick={toggleChat} title="Collapse chat" className="titlebar-no-drag text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="icon-sm" onClick={toggleChat} title="Collapse chat" className="text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="size-3.5" />
           </Button>
         </div>
